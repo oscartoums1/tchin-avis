@@ -1,0 +1,681 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tchin — Vos avis</title>
+<meta name="theme-color" content="#FBF7EF">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥂</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+<script>
+/* ============================================================
+   CONFIGURATION — à remplir une fois le projet Supabase créé.
+   Sans configuration, le site fonctionne quand même : l'invité
+   envoie ses avis par message au lieu de la base.
+   ============================================================ */
+const TCHIN_CONFIG = {
+  SUPABASE_URL: "",      // ex : "https://xxxxxxxx.supabase.co"
+  SUPABASE_ANON_KEY: "", // la clé « anon public » du projet
+};
+</script>
+<style>
+  :root {
+    --paper: #FBF7EF;
+    --paper-deep: #F3ECDD;
+    --ink: #211B12;
+    --ink-soft: #6B5D48;
+    --gold: #A9812F;
+    --gold-bright: #C9A24B;
+    --hairline: rgba(33, 27, 18, 0.14);
+    --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--sans);
+    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+    background-attachment: fixed;
+    color: var(--ink);
+    min-height: 100dvh;
+    padding: 12px;
+  }
+  /* Le cadre double filet — la même carte que le menu imprimé. */
+  .frame {
+    position: relative;
+    max-width: 460px;
+    margin: 0 auto;
+    min-height: calc(100dvh - 24px);
+    border: 1px solid rgba(169, 129, 47, 0.55);
+    outline: 0.6px solid rgba(169, 129, 47, 0.25);
+    outline-offset: 5px;
+    padding: 34px 24px 30px;
+    display: flex;
+    flex-direction: column;
+  }
+  /* ---------- En-tête ---------- */
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 6px;
+    color: var(--gold); text-align: center; text-indent: 6px;
+  }
+  h1.party {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(30px, 9vw, 40px); line-height: 1.08;
+    letter-spacing: -0.4px; text-align: center; margin-top: 10px;
+    text-wrap: balance;
+  }
+  .date {
+    font-family: var(--serif); font-style: italic; font-size: 17px;
+    color: var(--ink-soft); text-align: center; margin-top: 8px;
+  }
+  .ornament {
+    display: flex; align-items: center; gap: 10px; margin: 20px 0 0;
+  }
+  .ornament::before, .ornament::after {
+    content: ""; flex: 1; height: 1px; background: var(--hairline);
+  }
+  .ornament span {
+    width: 6px; height: 6px; background: rgba(169, 129, 47, 0.8);
+    transform: rotate(45deg); flex: none;
+  }
+  /* ---------- Écrans ---------- */
+  .screen { display: none; flex: 1; flex-direction: column; }
+  .screen.active { display: flex; animation: rise 0.45s ease both; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  /* ---------- Prénom ---------- */
+  .ask {
+    font-family: var(--serif); font-weight: 600; font-size: 27px;
+    text-align: center; margin-top: 12px;
+  }
+  .hint {
+    font-size: 13px; color: var(--ink-soft); text-align: center;
+    margin-top: 8px; line-height: 1.5;
+  }
+  input.name {
+    font-family: var(--serif); font-size: 26px; font-weight: 600;
+    text-align: center; color: var(--ink);
+    background: transparent; border: none;
+    border-bottom: 1px solid rgba(169, 129, 47, 0.6);
+    width: 100%; max-width: 280px; margin: 26px auto 0;
+    padding: 6px 4px 10px; border-radius: 0; outline: none;
+  }
+  input.name:focus { border-bottom-color: var(--gold); }
+  input.name::placeholder { color: rgba(107, 93, 72, 0.45); font-style: italic; }
+  /* ---------- Boutons ---------- */
+  .btn {
+    display: block; width: 100%; border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 16px; font-weight: 700;
+    color: var(--paper); letter-spacing: 0.3px;
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+    padding: 15px 20px; border-radius: 999px;
+    box-shadow: 0 8px 22px rgba(169, 129, 47, 0.35);
+    transition: transform 0.15s ease, opacity 0.2s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; box-shadow: none; cursor: default; }
+  .btn-ghost {
+    display: block; width: 100%; border: 1px solid rgba(169, 129, 47, 0.5);
+    background: transparent; cursor: pointer; color: var(--ink);
+    font-family: var(--sans); font-size: 15px; font-weight: 600;
+    padding: 13px 20px; border-radius: 999px; margin-top: 10px;
+    transition: transform 0.15s ease;
+  }
+  .btn-ghost:active { transform: scale(0.97); }
+  .btn-row { margin-top: auto; padding-top: 26px; }
+  /* ---------- Cartes cocktail ---------- */
+  .greeting {
+    font-family: var(--serif); font-style: italic; font-size: 19px;
+    text-align: center; margin-top: 16px; color: var(--ink);
+  }
+  .greeting .who { font-style: normal; font-weight: 700; }
+  .intro {
+    font-size: 13px; color: var(--ink-soft); text-align: center;
+    margin-top: 6px; line-height: 1.5;
+  }
+  .cocktail {
+    border-top: 1px solid var(--hairline);
+    padding: 18px 2px 20px; margin-top: 4px;
+  }
+  .cocktail:first-of-type { border-top: none; margin-top: 10px; }
+  .c-head { display: flex; align-items: baseline; gap: 12px; }
+  .c-num {
+    font-family: var(--serif); font-weight: 600; font-size: 14px;
+    color: var(--gold);
+  }
+  .c-name {
+    font-family: var(--serif); font-weight: 700; font-size: 23px;
+    letter-spacing: -0.2px; flex: 1;
+  }
+  .c-score {
+    font-family: var(--serif); font-weight: 700; font-size: 21px;
+    color: var(--gold); min-width: 52px; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .c-score small { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+  .dots { display: flex; gap: 4px; margin-top: 14px; justify-content: space-between; }
+  .dot {
+    flex: 1 1 0; min-width: 0; max-width: 30px;
+    aspect-ratio: 1 / 1; height: auto; padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(169, 129, 47, 0.5);
+    background: transparent; cursor: pointer; flex: none;
+    font-size: 11px; font-weight: 600; color: var(--ink-soft);
+    font-family: var(--sans);
+    transition: background 0.15s ease, transform 0.12s ease, color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .dot:active { transform: scale(0.88); }
+  .dot.on {
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+    border-color: transparent; color: var(--paper);
+  }
+  textarea.comment {
+    width: 100%; margin-top: 14px; resize: none;
+    font-family: var(--serif); font-style: italic; font-size: 16px;
+    color: var(--ink); background: transparent;
+    border: none; border-bottom: 1px solid var(--hairline);
+    padding: 4px 2px 8px; outline: none; border-radius: 0;
+    min-height: 32px; overflow: hidden;
+  }
+  textarea.comment:focus { border-bottom-color: rgba(169, 129, 47, 0.6); }
+  textarea.comment::placeholder { color: rgba(107, 93, 72, 0.45); }
+  .progress {
+    text-align: center; font-size: 12.5px; color: var(--ink-soft);
+    margin-top: 18px;
+  }
+  /* ---------- Confirmation ---------- */
+  .big-emoji { font-size: 54px; text-align: center; margin-top: 46px; }
+  .thanks {
+    font-family: var(--serif); font-weight: 700; font-size: 34px;
+    text-align: center; margin-top: 18px;
+  }
+  .thanks-sub {
+    font-size: 14.5px; color: var(--ink-soft); text-align: center;
+    margin-top: 12px; line-height: 1.6; padding: 0 12px;
+  }
+  /* ---------- Panneau de secours (envoi par message) ---------- */
+  .rescue {
+    margin-top: 26px; padding: 18px;
+    border: 1px solid rgba(169, 129, 47, 0.4);
+    background: rgba(169, 129, 47, 0.06);
+  }
+  .rescue p { font-size: 13.5px; line-height: 1.55; color: var(--ink); }
+  .rescue .btn { margin-top: 14px; }
+  /* ---------- Vue hôte (résultats) ---------- */
+  .result { border-top: 1px solid var(--hairline); padding: 18px 2px 20px; }
+  .result:first-of-type { border-top: none; margin-top: 10px; }
+  .r-head { display: flex; align-items: baseline; gap: 12px; }
+  .r-name { font-family: var(--serif); font-weight: 700; font-size: 22px; flex: 1; }
+  .r-avg { font-family: var(--serif); font-weight: 700; font-size: 26px; color: var(--gold); }
+  .r-avg small { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
+  .r-count { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .review { margin-top: 12px; padding-left: 12px; border-left: 2px solid rgba(169, 129, 47, 0.35); }
+  .review .who { font-size: 13.5px; font-weight: 700; }
+  .review .note { color: var(--gold); font-weight: 700; }
+  .review .text {
+    font-family: var(--serif); font-style: italic; font-size: 15.5px;
+    color: var(--ink-soft); margin-top: 2px; line-height: 1.45;
+  }
+  .empty-note {
+    text-align: center; color: var(--ink-soft); font-size: 14px;
+    line-height: 1.6; margin-top: 40px; padding: 0 16px;
+  }
+  /* ---------- Pied ---------- */
+  .brand {
+    text-align: center; font-size: 11.5px; font-weight: 600;
+    color: var(--gold); margin-top: 30px; padding-top: 8px;
+  }
+  .error-box { text-align: center; margin-top: 60px; padding: 0 10px; }
+  .error-box .big-emoji { margin-top: 0; }
+  .spin {
+    width: 22px; height: 22px; margin: 0 auto;
+    border: 2.5px solid rgba(251, 247, 239, 0.4);
+    border-top-color: var(--paper); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="frame">
+  <header id="header" hidden>
+    <div class="eyebrow">TCHIN</div>
+    <h1 class="party" id="party-name"></h1>
+    <div class="date" id="party-date"></div>
+    <div class="ornament"><span></span></div>
+  </header>
+
+  <!-- Lien invalide -->
+  <section class="screen" id="screen-error">
+    <div class="error-box">
+      <div class="big-emoji">🥂</div>
+      <p class="thanks" style="font-size:26px;">Ce lien est incomplet</p>
+      <p class="thanks-sub">Il manque le menu de la soirée. Rescannez le QR code de la carte, ou demandez le lien à votre hôte.</p>
+    </div>
+  </section>
+
+  <!-- 1. Le prénom -->
+  <section class="screen" id="screen-name">
+    <p class="ask">Quel est votre prénom&nbsp;?</p>
+    <p class="hint">Pour que votre hôte sache qui a aimé quoi.</p>
+    <input class="name" id="input-name" type="text" autocomplete="given-name"
+           enterkeyhint="go" maxlength="30" placeholder="Camille, Tom, Mamie…">
+    <div class="btn-row">
+      <button class="btn" id="btn-start" disabled>C'est parti 🥂</button>
+    </div>
+  </section>
+
+  <!-- 2. Les avis -->
+  <section class="screen" id="screen-rate">
+    <p class="greeting">À vous, <span class="who" id="greet-name"></span>.</p>
+    <p class="intro">Notez les cocktails que vous avez goûtés — laissez les autres de côté.</p>
+    <div id="cocktail-list"></div>
+    <p class="progress" id="progress"></p>
+    <div class="btn-row">
+      <button class="btn" id="btn-send" disabled>Envoyer mes avis</button>
+      <button class="btn-ghost" id="btn-other-name">Ce n'est pas mon prénom</button>
+    </div>
+  </section>
+
+  <!-- 3. Merci -->
+  <section class="screen" id="screen-done">
+    <div class="big-emoji">🥂</div>
+    <p class="thanks" id="done-title">Merci&nbsp;!</p>
+    <p class="thanks-sub" id="done-sub">Vos avis sont bien arrivés. Belle soirée&nbsp;!</p>
+    <div id="rescue-panel" hidden class="rescue">
+      <p><strong>L'envoi automatique n'a pas fonctionné</strong> (pas de réseau, ou base non configurée). Envoyez vos avis à votre hôte en un geste&nbsp;:</p>
+      <button class="btn" id="btn-share">Envoyer par message</button>
+      <button class="btn-ghost" id="btn-copy">Copier mes avis</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn-ghost" id="btn-edit">Modifier mes avis</button>
+    </div>
+  </section>
+
+  <!-- Vue hôte : les résultats -->
+  <section class="screen" id="screen-host">
+    <p class="greeting" style="margin-top:14px;">Les avis de vos invités</p>
+    <div id="host-list"></div>
+    <p class="empty-note" id="host-empty" hidden></p>
+    <div class="btn-row">
+      <button class="btn" id="btn-refresh">Actualiser</button>
+    </div>
+  </section>
+
+  <div class="brand">Fait maison avec Tchin 🥂</div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- Décodage du payload (le QR porte le menu) ---------- */
+function decodePayload() {
+  const match = location.hash.match(/^#(m|r)=([A-Za-z0-9_-]+)$/);
+  if (!match) return null;
+  try {
+    const b64 = match[2].replace(/-/g, "+").replace(/_/g, "/");
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const text = new TextDecoder().decode(bytes);
+    const parts = text.split("|");
+    if (parts[0] !== "1" || parts.length < 5) return null;
+    const cocktails = parts[4].split("~").map(s => s.trim()).filter(Boolean);
+    if (!parts[1] || cocktails.length === 0) return null;
+    return { mode: match[1], id: parts[1], name: parts[2], date: parts[3], cocktails };
+  } catch { return null; }
+}
+
+/* ---------- Config (surchargée en local pour les tests) ---------- */
+function config() {
+  try {
+    const override = JSON.parse(localStorage.getItem("tchin:config") || "null");
+    if (override && override.SUPABASE_URL) return override;
+  } catch {}
+  return TCHIN_CONFIG;
+}
+function hasBackend() {
+  const c = config();
+  return Boolean(c.SUPABASE_URL && c.SUPABASE_ANON_KEY);
+}
+
+/* ---------- Petites aides ---------- */
+const $ = id => document.getElementById(id);
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  const el = $(id);
+  el.classList.add("active");
+  window.scrollTo({ top: 0 });
+}
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+function frenchDate(iso) {
+  const [y, m, d] = (iso || "").split("-").map(Number);
+  if (!y || !m || !d) return "";
+  const date = new Date(Date.UTC(y, m - 1, d));
+  const text = date.toLocaleDateString("fr-FR",
+    { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+function cleanName(raw) {
+  const name = raw.trim().replace(/\s+/g, " ");
+  return name ? name.charAt(0).toUpperCase() + name.slice(1) : "";
+}
+
+/* ---------- État ---------- */
+const party = decodePayload();
+let guestName = "";
+/* ratings : { "Nom du cocktail": { rating: 8, comment: "..." } } */
+let ratings = {};
+
+const store = {
+  key(kind) { return `tchin:${party.id}:${kind}`; },
+  get(kind, fallback) {
+    try { return JSON.parse(localStorage.getItem(this.key(kind))) ?? fallback; }
+    catch { return fallback; }
+  },
+  set(kind, value) {
+    try { localStorage.setItem(this.key(kind), JSON.stringify(value)); } catch {}
+  },
+};
+
+/* ---------- Démarrage ---------- */
+if (!party) {
+  show("screen-error");
+} else {
+  $("header").hidden = false;
+  $("party-name").textContent = party.name || "La soirée";
+  $("party-date").textContent = frenchDate(party.date);
+  document.title = `${party.name || "Tchin"} — Vos avis`;
+
+  if (party.mode === "r") {
+    initHost();
+  } else {
+    initGuest();
+  }
+}
+
+/* ============================================================
+   PARCOURS INVITÉ
+   ============================================================ */
+function initGuest() {
+  guestName = store.get("name", "");
+  ratings = store.get("draft", {});
+
+  const input = $("input-name");
+  input.value = guestName;
+  $("btn-start").disabled = !cleanName(input.value);
+
+  input.addEventListener("input", () => {
+    $("btn-start").disabled = !cleanName(input.value);
+  });
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" && cleanName(input.value)) startRating();
+  });
+  $("btn-start").addEventListener("click", startRating);
+  $("btn-other-name").addEventListener("click", () => {
+    show("screen-name");
+    input.focus();
+  });
+  $("btn-send").addEventListener("click", submit);
+  $("btn-edit").addEventListener("click", () => show("screen-rate"));
+  $("btn-share").addEventListener("click", shareByMessage);
+  $("btn-copy").addEventListener("click", copyReviews);
+
+  show("screen-name");
+  if (!guestName) setTimeout(() => input.focus(), 350);
+}
+
+function startRating() {
+  guestName = cleanName($("input-name").value);
+  if (!guestName) return;
+  store.set("name", guestName);
+  $("greet-name").textContent = guestName;
+  buildCocktailList();
+  show("screen-rate");
+}
+
+function buildCocktailList() {
+  const list = $("cocktail-list");
+  list.textContent = "";
+  party.cocktails.forEach((cocktail, index) => {
+    const card = el("div", "cocktail");
+    const head = el("div", "c-head");
+    head.append(
+      el("span", "c-num", String(index + 1).padStart(2, "0")),
+      el("span", "c-name", cocktail)
+    );
+    const score = el("span", "c-score");
+    head.append(score);
+    card.append(head);
+
+    const dots = el("div", "dots");
+    for (let n = 1; n <= 10; n++) {
+      const dot = el("button", "dot", String(n));
+      dot.type = "button";
+      dot.setAttribute("aria-label", `${n} sur 10 pour ${cocktail}`);
+      dot.addEventListener("click", () => {
+        const entry = ratings[cocktail] || {};
+        entry.rating = n;
+        ratings[cocktail] = entry;
+        store.set("draft", ratings);
+        paint();
+      });
+      dots.append(dot);
+    }
+    card.append(dots);
+
+    const comment = el("textarea", "comment");
+    comment.placeholder = "Un mot ? (facultatif)";
+    comment.rows = 1;
+    comment.maxLength = 280;
+    comment.value = ratings[cocktail]?.comment || "";
+    comment.addEventListener("input", () => {
+      comment.style.height = "auto";
+      comment.style.height = comment.scrollHeight + "px";
+      const entry = ratings[cocktail] || {};
+      entry.comment = comment.value;
+      ratings[cocktail] = entry;
+      store.set("draft", ratings);
+    });
+    card.append(comment);
+
+    card.dataset.cocktail = cocktail;
+    list.append(card);
+  });
+  paint();
+}
+
+/* Rafraîchit points, scores et progression depuis `ratings`. */
+function paint() {
+  let rated = 0;
+  document.querySelectorAll(".cocktail").forEach(card => {
+    const cocktail = card.dataset.cocktail;
+    const rating = ratings[cocktail]?.rating || 0;
+    if (rating > 0) rated += 1;
+    card.querySelectorAll(".dot").forEach((dot, i) => {
+      dot.classList.toggle("on", i < rating);
+    });
+    const score = card.querySelector(".c-score");
+    score.textContent = "";
+    if (rating > 0) {
+      score.append(document.createTextNode(rating));
+      score.append(el("small", "", "/10"));
+    }
+  });
+  const total = party.cocktails.length;
+  $("progress").textContent = rated === 0
+    ? "Touchez une note pour commencer"
+    : `${rated} cocktail${rated > 1 ? "s" : ""} noté${rated > 1 ? "s" : ""} sur ${total}`;
+  $("btn-send").disabled = rated === 0;
+}
+
+/* ---------- Envoi ---------- */
+function reviewRows() {
+  return Object.entries(ratings)
+    .filter(([cocktail, r]) => r.rating > 0 && party.cocktails.includes(cocktail))
+    .map(([cocktail, r]) => ({
+      party_id: party.id,
+      party_name: party.name,
+      guest_name: guestName,
+      cocktail,
+      rating: r.rating,
+      comment: (r.comment || "").trim(),
+    }));
+}
+
+async function submit() {
+  const rows = reviewRows();
+  if (rows.length === 0) return;
+  const button = $("btn-send");
+  button.disabled = true;
+  const label = button.textContent;
+  button.textContent = "";
+  button.append(el("div", "spin"));
+
+  let ok = false;
+  if (hasBackend()) {
+    try {
+      const c = config();
+      const response = await fetch(
+        `${c.SUPABASE_URL}/rest/v1/avis?on_conflict=party_id,guest_name,cocktail`,
+        {
+          method: "POST",
+          headers: {
+            apikey: c.SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${c.SUPABASE_ANON_KEY}`,
+            "Content-Type": "application/json",
+            Prefer: "resolution=merge-duplicates,return=minimal",
+          },
+          body: JSON.stringify(rows),
+        }
+      );
+      ok = response.ok;
+    } catch { ok = false; }
+  }
+
+  button.textContent = label;
+  button.disabled = false;
+
+  $("rescue-panel").hidden = ok;
+  $("done-title").textContent = ok ? `Merci ${guestName} !` : `Presque, ${guestName}…`;
+  $("done-sub").textContent = ok
+    ? "Vos avis sont bien arrivés. Belle soirée !"
+    : "Vos avis sont prêts — il ne reste qu'à les faire parvenir à votre hôte.";
+  if (ok) store.set("sent", true);
+  show("screen-done");
+}
+
+/* ---------- Secours : par message ---------- */
+function reviewText() {
+  const lines = [`🥂 Mes avis — ${party.name}`];
+  for (const row of reviewRows()) {
+    let line = `${row.cocktail} : ${row.rating}/10`;
+    if (row.comment) line += ` — « ${row.comment} »`;
+    lines.push(line);
+  }
+  lines.push(`(${guestName}, via le menu Tchin)`);
+  return lines.join("\n");
+}
+async function shareByMessage() {
+  const text = reviewText();
+  if (navigator.share) {
+    try { await navigator.share({ text }); return; } catch {}
+  }
+  copyReviews();
+}
+async function copyReviews() {
+  try {
+    await navigator.clipboard.writeText(reviewText());
+    $("btn-copy").textContent = "Copié ✓";
+    setTimeout(() => { $("btn-copy").textContent = "Copier mes avis"; }, 1800);
+  } catch {}
+}
+
+/* ============================================================
+   VUE HÔTE — les résultats par cocktail
+   ============================================================ */
+function initHost() {
+  $("btn-refresh").addEventListener("click", loadResults);
+  show("screen-host");
+  loadResults();
+}
+
+async function loadResults() {
+  const list = $("host-list");
+  const empty = $("host-empty");
+  list.textContent = "";
+  empty.hidden = true;
+
+  if (!hasBackend()) {
+    empty.hidden = false;
+    empty.textContent = "La base des avis n'est pas encore configurée — renseignez SUPABASE_URL et SUPABASE_ANON_KEY dans index.html (voir le README du dépôt tchin-avis).";
+    return;
+  }
+
+  let rows = [];
+  try {
+    const c = config();
+    const response = await fetch(
+      `${c.SUPABASE_URL}/rest/v1/avis` +
+      `?party_id=eq.${encodeURIComponent(party.id)}` +
+      `&select=guest_name,cocktail,rating,comment,created_at&order=created_at.asc`,
+      { headers: { apikey: c.SUPABASE_ANON_KEY, Authorization: `Bearer ${c.SUPABASE_ANON_KEY}` } }
+    );
+    if (!response.ok) throw new Error(String(response.status));
+    rows = await response.json();
+  } catch {
+    empty.hidden = false;
+    empty.textContent = "Impossible de charger les avis pour l'instant. Vérifiez la connexion et réessayez.";
+    return;
+  }
+
+  if (rows.length === 0) {
+    empty.hidden = false;
+    empty.textContent = "Aucun avis pour l'instant. Laissez la carte sur la table, les avis arriveront 🥂";
+    return;
+  }
+
+  /* Regroupe par cocktail, dans l'ordre du menu (les inconnus à la fin). */
+  const byCocktail = new Map();
+  for (const name of party.cocktails) byCocktail.set(name, []);
+  for (const row of rows) {
+    if (!byCocktail.has(row.cocktail)) byCocktail.set(row.cocktail, []);
+    byCocktail.get(row.cocktail).push(row);
+  }
+
+  for (const [cocktail, reviews] of byCocktail) {
+    if (reviews.length === 0) continue;
+    const block = el("div", "result");
+    const head = el("div", "r-head");
+    head.append(el("span", "r-name", cocktail));
+    const average = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+    const avg = el("span", "r-avg",
+      average.toLocaleString("fr-FR", { maximumFractionDigits: 1 }));
+    avg.append(el("small", "", " /10"));
+    head.append(avg);
+    block.append(head);
+    block.append(el("div", "r-count",
+      `${reviews.length} avis · ${reviews.map(r => r.guest_name).join(", ")}`));
+
+    for (const review of reviews) {
+      const item = el("div", "review");
+      const who = el("div", "who", `${review.guest_name} `);
+      who.append(el("span", "note", `${review.rating}/10`));
+      item.append(who);
+      if (review.comment) item.append(el("div", "text", `« ${review.comment} »`));
+      block.append(item);
+    }
+    list.append(block);
+  }
+}
+</script>
+</body>
+</html>
