@@ -308,9 +308,28 @@ const TCHIN_CONFIG = {
   .gaugeline { height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); margin-top: 10px; overflow: hidden; }
   .gaugeline i { display: block; height: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-deep)); box-shadow: 0 0 8px rgba(216, 169, 78, 0.6); }
   .r-count { font-size: 12px; color: var(--cream-2); margin-top: 9px; }
+  .host-total { text-align: center; font-size: 12px; color: var(--cream-2); margin: -6px 0 14px; }
   .review { margin-top: 12px; padding-left: 12px; border-left: 2px solid rgba(216, 169, 78, 0.45); }
-  .review .who { font-size: 13.5px; font-weight: 700; }
+  .review .who { display: flex; align-items: baseline; gap: 6px; font-size: 13.5px; font-weight: 700; }
   .review .note { color: var(--gold-light); font-weight: 700; }
+  /* La suppression, réservée à l'hôte : discrète, mais à portée de doigt. */
+  .review .del {
+    margin-left: auto; background: none; border: none; cursor: pointer;
+    color: var(--cream-3); font-size: 14px; line-height: 1;
+    padding: 6px 4px 10px 18px; transition: color 0.15s ease;
+  }
+  .review .del:hover { color: var(--cream); }
+  .confirm-del { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .confirm-del .q { flex: 1 1 100%; font-size: 12.5px; color: var(--cream-2); line-height: 1.5; }
+  .mini {
+    border-radius: 999px; cursor: pointer; font-family: var(--sans);
+    font-size: 12.5px; font-weight: 700; padding: 9px 16px;
+    transition: transform 0.15s ease, opacity 0.2s ease;
+  }
+  .mini:active { transform: scale(0.96); }
+  .mini:disabled { opacity: 0.45; cursor: default; }
+  .mini-yes { border: none; background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: var(--on-gold); }
+  .mini-no { border: 1px solid var(--stroke); background: transparent; color: var(--cream); }
   .review .text { font-family: var(--serif); font-style: italic; font-size: 15.5px; color: rgba(244, 237, 224, 0.62); margin-top: 3px; line-height: 1.5; }
   .empty-note {
     text-align: center; color: var(--cream-2); font-size: 14px;
@@ -434,6 +453,7 @@ const TCHIN_CONFIG = {
   <!-- Vue hôte : les résultats -->
   <section class="screen" id="screen-host">
     <p class="greeting" style="margin-top: 16px; margin-bottom: 14px;">Les avis de vos invités</p>
+    <p class="host-total" id="host-total" hidden></p>
     <div id="host-list" style="flex: 1; align-content: flex-start;"></div>
     <p class="empty-note" id="host-empty" hidden></p>
     <div class="actionbar">
@@ -849,6 +869,7 @@ async function loadResults() {
   const button = $("btn-refresh");
   list.textContent = "";
   empty.hidden = true;
+  $("host-total").hidden = true;
   button.disabled = true;
   const label = button.textContent;
   button.textContent = "";
@@ -868,7 +889,7 @@ async function loadResults() {
     const response = await fetch(
       `${c.SUPABASE_URL}/rest/v1/avis` +
       `?party_id=eq.${encodeURIComponent(party.id)}` +
-      `&select=guest_name,cocktail,rating,comment,created_at&order=created_at.asc`,
+      `&select=id,guest_name,cocktail,rating,comment,created_at&order=created_at.asc`,
       { headers: { apikey: c.SUPABASE_ANON_KEY, Authorization: `Bearer ${c.SUPABASE_ANON_KEY}` } }
     );
     if (!response.ok) throw new Error(String(response.status));
@@ -880,6 +901,13 @@ async function loadResults() {
     return;
   }
   restore();
+
+  const guests = new Set(rows.map(r => r.guest_name));
+  if (rows.length > 0) {
+    $("host-total").textContent =
+      `${rows.length} avis · ${guests.size} invité${guests.size > 1 ? "s" : ""}`;
+    $("host-total").hidden = false;
+  }
 
   if (rows.length === 0) {
     empty.hidden = false;
@@ -941,14 +969,70 @@ async function loadResults() {
 
     for (const review of reviews) {
       const item = el("div", "review");
-      const who = el("div", "who", `${review.guest_name} `);
-      who.append(el("span", "note", `${review.rating}/10`));
+      const who = el("div", "who");
+      const label = el("span", "", `${review.guest_name} `);
+      label.append(el("span", "note", `${review.rating}/10`));
+      who.append(label);
+      const del = el("button", "del", "✕");
+      del.type = "button";
+      del.setAttribute("aria-label", `Supprimer l'avis de ${review.guest_name} sur ${cocktail}`);
+      del.addEventListener("click", () => askDelete(item, review, cocktail));
+      who.append(del);
       item.append(who);
       if (review.comment) item.append(el("div", "text", `« ${review.comment} »`));
       block.append(item);
     }
     list.append(block);
   }
+}
+
+/* ---------- Suppression (hôte) : confirmation en place, puis corbeille ---------- */
+function askDelete(item, review, cocktail) {
+  if (item.querySelector(".confirm-del")) return;
+  const box = el("div", "confirm-del");
+  const question = el("span", "q",
+    `Supprimer l'avis de ${review.guest_name} sur ${cocktail} ?`);
+  const yes = el("button", "mini mini-yes", "Supprimer");
+  const no = el("button", "mini mini-no", "Garder");
+  yes.type = no.type = "button";
+  no.addEventListener("click", () => box.remove());
+  yes.addEventListener("click", async () => {
+    yes.disabled = no.disabled = true;
+    yes.textContent = "…";
+    if (await softDelete(review.id)) {
+      loadResults();
+    } else {
+      yes.disabled = no.disabled = false;
+      yes.textContent = "Supprimer";
+      question.textContent = "Impossible pour l'instant — vérifiez la connexion et réessayez.";
+    }
+  });
+  box.append(question, yes, no);
+  item.append(box);
+}
+
+/* L'avis n'est pas détruit : il est déplacé hors de la soirée
+   (party_id préfixé « corbeille: »), donc récupérable dans Supabase.
+   Seule la mise à jour est autorisée par la base — pas besoin de
+   nouvelle policy, et les invités ne voient jamais ce bouton. */
+async function softDelete(id) {
+  try {
+    const c = config();
+    const response = await fetch(
+      `${c.SUPABASE_URL}/rest/v1/avis?id=eq.${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        headers: {
+          apikey: c.SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${c.SUPABASE_ANON_KEY}`,
+          "Content-Type": "application/json",
+          Prefer: "return=minimal",
+        },
+        body: JSON.stringify({ party_id: `corbeille:${party.id}:${Date.now()}` }),
+      }
+    );
+    return response.ok;
+  } catch { return false; }
 }
 </script>
 </body>

@@ -51,6 +51,10 @@ partage), au lieu de les déposer dans la base.
   d'autre.** URLs, payload, clés `localStorage` (`tchin:<partyId>:name`,
   `:draft`, `:sent`, `tchin:config`) et appels Supabase sont inchangés —
   les QR codes imprimés et les brouillons des invités restent valables.
+- L'hôte (vue `#r=`, ouverte depuis l'app) peut **supprimer un avis** :
+  ✕ sur l'avis → confirmation. L'avis n'est pas détruit, son `party_id`
+  est préfixé `corbeille:` (récupérable dans le Table Editor) — aucune
+  policy DELETE nécessaire.
 - Ré-envoyer ses avis **met à jour** les précédents (contrainte unique
   soirée + prénom + cocktail, envoi en `merge-duplicates`) — pas de doublons.
 - Deux invités qui partagent le même prénom à la même soirée écrasent
