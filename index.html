@@ -313,6 +313,9 @@ const TCHIN_CONFIG = {
 <script>
 "use strict";
 
+/* Si le lien change (autre soirée, bascule invité/hôte), on repart proprement. */
+window.addEventListener("hashchange", () => location.reload());
+
 /* ---------- Décodage du payload (le QR porte le menu) ---------- */
 function decodePayload() {
   const match = location.hash.match(/^#(m|r)=([A-Za-z0-9_-]+)$/);
