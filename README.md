@@ -51,6 +51,9 @@ partage), au lieu de les déposer dans la base.
   d'autre.** URLs, payload, clés `localStorage` (`tchin:<partyId>:name`,
   `:draft`, `:sent`, `tchin:config`) et appels Supabase sont inchangés —
   les QR codes imprimés et les brouillons des invités restent valables.
+- L'invité peut marquer un cocktail « **Je n'y ai pas goûté** » : la carte
+  s'estompe, la progression avance, rien n'est envoyé pour ce cocktail
+  (état purement local, dans son brouillon).
 - L'hôte (vue `#r=`, ouverte depuis l'app) peut **supprimer un avis** :
   ✕ sur l'avis → confirmation. L'avis n'est pas détruit, son `party_id`
   est préfixé `corbeille:` (récupérable dans le Table Editor) — aucune

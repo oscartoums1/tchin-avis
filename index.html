@@ -207,10 +207,23 @@ const TCHIN_CONFIG = {
   }
   .dot.cur .dn { color: var(--gold-light); font-weight: 700; }
   .reaction {
-    display: flex; justify-content: flex-end; min-height: 17px; margin-top: 2px;
+    display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+    min-height: 17px; margin-top: 2px;
     font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--gold-light);
   }
   .reaction span.pop { animation: pop 0.3s ease; }
+  /* « Je n'y ai pas goûté » — l'invité écarte un cocktail sans le noter. */
+  .skip {
+    background: none; border: none; cursor: pointer; padding: 4px 0;
+    font-family: var(--sans); font-style: normal; font-size: 11.5px; font-weight: 600;
+    color: var(--cream-3); transition: color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .skip:hover { color: var(--cream); }
+  .cocktail.skipped .skip { color: var(--gold-light); }
+  .cocktail.skipped .dots { opacity: 0.3; }
+  .cocktail.skipped .comment { display: none; }
+  .cocktail.skipped .c-name { color: var(--cream-2); }
   textarea.comment {
     width: 100%; margin-top: 3px; resize: none;
     font-family: var(--serif); font-style: italic; font-size: 16px;
@@ -619,12 +632,26 @@ function fitComments() {
 
 function setRating(cocktail, n) {
   const entry = ratings[cocktail] || {};
-  const changed = entry.rating !== n;
+  const changed = entry.rating !== n || entry.skipped;
   entry.rating = n;
+  delete entry.skipped; /* noter un cocktail annule « pas goûté » */
   ratings[cocktail] = entry;
   store.set("draft", ratings);
   paint(changed ? cocktail : null);
   if (changed && navigator.vibrate && !reducedMotion.matches) navigator.vibrate(6);
+}
+
+function toggleSkip(cocktail) {
+  const entry = ratings[cocktail] || {};
+  if (entry.skipped) {
+    delete entry.skipped;
+  } else {
+    entry.skipped = true;
+    delete entry.rating;
+  }
+  ratings[cocktail] = entry;
+  store.set("draft", ratings);
+  paint();
 }
 
 function buildCocktailList() {
@@ -683,7 +710,11 @@ function buildCocktailList() {
     card.append(dots);
 
     const reaction = el("div", "reaction");
-    reaction.append(el("span", "", ""));
+    const skip = el("button", "skip", "Je n'y ai pas goûté");
+    skip.type = "button";
+    skip.setAttribute("aria-pressed", "false");
+    skip.addEventListener("click", () => toggleSkip(cocktail));
+    reaction.append(skip, el("span", "", ""));
     card.append(reaction);
 
     const comment = el("textarea", "comment");
@@ -709,12 +740,19 @@ function buildCocktailList() {
 
 /* Rafraîchit perles, scores, réactions et progression depuis `ratings`. */
 function paint(popFor) {
-  let rated = 0;
+  let rated = 0, skipped = 0;
   document.querySelectorAll(".cocktail").forEach(card => {
     const cocktail = card.dataset.cocktail;
-    const rating = ratings[cocktail]?.rating || 0;
+    const entry = ratings[cocktail] || {};
+    const rating = entry.rating || 0;
+    const isSkipped = Boolean(entry.skipped) && rating === 0;
     if (rating > 0) rated += 1;
+    if (isSkipped) skipped += 1;
     card.classList.toggle("rated", rating > 0);
+    card.classList.toggle("skipped", isSkipped);
+    const skipBtn = card.querySelector(".skip");
+    skipBtn.textContent = isSkipped ? "✓ Pas goûté" : "Je n'y ai pas goûté";
+    skipBtn.setAttribute("aria-pressed", isSkipped ? "true" : "false");
     card.querySelectorAll(".dot").forEach((dot, i) => {
       dot.classList.toggle("on", i < rating);
       dot.classList.toggle("cur", i + 1 === rating);
@@ -735,17 +773,25 @@ function paint(popFor) {
     }
   });
   const total = party.cocktails.length;
-  $("gauge-fill").style.width = (rated / total * 100).toFixed(0) + "%";
-  $("progress").textContent = rated === 0
-    ? "Touchez une note pour commencer"
-    : `${rated} cocktail${rated > 1 ? "s" : ""} noté${rated > 1 ? "s" : ""} sur ${total}`;
+  /* La jauge avance aussi avec les « pas goûté » : chaque cocktail traité compte. */
+  $("gauge-fill").style.width = ((rated + skipped) / total * 100).toFixed(0) + "%";
+  let texte;
+  if (rated === 0 && skipped === 0) {
+    texte = "Touchez une note pour commencer";
+  } else if (rated === 0) {
+    texte = `Rien de noté pour l'instant · ${skipped} pas goûté${skipped > 1 ? "s" : ""}`;
+  } else {
+    texte = `${rated} cocktail${rated > 1 ? "s" : ""} noté${rated > 1 ? "s" : ""} sur ${total}`;
+    if (skipped > 0) texte += ` · ${skipped} pas goûté${skipped > 1 ? "s" : ""}`;
+  }
+  $("progress").textContent = texte;
   $("btn-send").disabled = rated === 0;
 }
 
 /* ---------- Envoi ---------- */
 function reviewRows() {
   return Object.entries(ratings)
-    .filter(([cocktail, r]) => r.rating > 0 && party.cocktails.includes(cocktail))
+    .filter(([cocktail, r]) => r.rating > 0 && !r.skipped && party.cocktails.includes(cocktail))
     .map(([cocktail, r]) => ({
       party_id: party.id,
       party_name: party.name,
