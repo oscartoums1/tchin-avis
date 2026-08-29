@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tchin — Vos avis</title>
-<meta name="theme-color" content="#FBF7EF">
+<meta name="theme-color" content="#0B0A09">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥂</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
 <script>
 /* ============================================================
-   CONFIGURATION — à remplir une fois le projet Supabase créé.
+   CONFIGURATION — la même qu'avant : URL du projet Supabase et
+   clé « anon » (faite pour être publiée, la RLS fait le reste).
    Sans configuration, le site fonctionne quand même : l'invité
    envoie ses avis par message au lieu de la base.
    ============================================================ */
@@ -22,13 +23,19 @@ const TCHIN_CONFIG = {
 </script>
 <style>
   :root {
-    --paper: #FBF7EF;
-    --paper-deep: #F3ECDD;
-    --ink: #211B12;
-    --ink-soft: #6B5D48;
-    --gold: #A9812F;
-    --gold-bright: #C9A24B;
-    --hairline: rgba(33, 27, 18, 0.14);
+    --bg: #0B0A09;            /* charbon chaud — le fond Signature de l'app */
+    --glow: #1D150C;
+    --glass: rgba(255, 255, 255, 0.055);
+    --stroke: rgba(255, 255, 255, 0.10);
+    --hairline: rgba(255, 255, 255, 0.08);
+    --gold: #D8A94E;
+    --gold-deep: #B87333;
+    --gold-light: #E8C87E;
+    --label: #C9A227;
+    --on-gold: #17130A;
+    --cream: #F4EDE0;
+    --cream-2: rgba(244, 237, 224, 0.55);
+    --cream-3: rgba(244, 237, 224, 0.45);
     --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
@@ -36,226 +43,335 @@ const TCHIN_CONFIG = {
   html { -webkit-text-size-adjust: 100%; }
   body {
     font-family: var(--sans);
-    background: linear-gradient(180deg, var(--paper) 0%, var(--paper-deep) 100%);
+    color: var(--cream);
+    background: radial-gradient(ellipse 75% 42% at 50% -6%, var(--glow) 0%, rgba(11, 10, 9, 0) 62%), var(--bg);
     background-attachment: fixed;
-    color: var(--ink);
-    min-height: 100dvh;
-    padding: 12px;
+    min-height: 100vh; min-height: 100dvh;
   }
-  /* Le cadre double filet — la même carte que le menu imprimé. */
-  .frame {
-    position: relative;
-    max-width: 460px;
-    margin: 0 auto;
-    min-height: calc(100dvh - 24px);
-    border: 1px solid rgba(169, 129, 47, 0.55);
-    outline: 0.6px solid rgba(169, 129, 47, 0.25);
-    outline-offset: 5px;
-    padding: 34px 24px 30px;
-    display: flex;
-    flex-direction: column;
+  a { color: var(--gold); } a:hover { color: var(--gold-light); }
+  :focus-visible { outline: 2px solid rgba(216, 169, 78, 0.8); outline-offset: 3px; }
+  ::selection { background: rgba(216, 169, 78, 0.35); }
+
+  /* ---------- Bulles de champagne — l'ambiance, discrète et continue ---------- */
+  #bulles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  #bulles i {
+    position: absolute; bottom: -12px; border-radius: 50%;
+    background: rgba(216, 169, 78, 0.5);
+    animation: bulle var(--bt, 18s) linear var(--bd, 0s) infinite;
   }
+  @keyframes bulle {
+    0% { transform: translateY(0); opacity: 0; }
+    12% { opacity: 0.65; }
+    88% { opacity: 0.45; }
+    100% { transform: translateY(-105vh); opacity: 0; }
+  }
+
+  #colonne {
+    position: relative; z-index: 1;
+    max-width: 480px; margin: 0 auto;
+    min-height: 100vh; min-height: 100dvh;
+    padding: 48px 22px calc(16px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column;
+  }
+  @media (min-width: 700px) {
+    #colonne { max-width: 540px; padding: 64px 24px 24px; }
+  }
+
   /* ---------- En-tête ---------- */
   .eyebrow {
-    font-size: 11px; font-weight: 700; letter-spacing: 6px;
-    color: var(--gold); text-align: center; text-indent: 6px;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 5.5px;
+    color: var(--label); text-align: center; text-indent: 5.5px;
   }
   h1.party {
     font-family: var(--serif); font-weight: 700;
-    font-size: clamp(30px, 9vw, 40px); line-height: 1.08;
-    letter-spacing: -0.4px; text-align: center; margin-top: 10px;
+    font-size: clamp(32px, 10vw, 46px); line-height: 1.05;
+    letter-spacing: -0.5px; text-align: center; margin-top: 13px;
     text-wrap: balance;
   }
   .date {
-    font-family: var(--serif); font-style: italic; font-size: 17px;
-    color: var(--ink-soft); text-align: center; margin-top: 8px;
+    font-family: var(--serif); font-style: italic; font-size: 16.5px;
+    color: var(--cream-2); text-align: center; margin-top: 9px;
   }
-  .ornament {
-    display: flex; align-items: center; gap: 10px; margin: 20px 0 0;
+  .filet {
+    height: 1px; margin-top: 22px;
+    background: linear-gradient(90deg, rgba(216, 169, 78, 0) 0%, rgba(216, 169, 78, 0.55) 50%, rgba(216, 169, 78, 0) 100%);
   }
-  .ornament::before, .ornament::after {
-    content: ""; flex: 1; height: 1px; background: var(--hairline);
-  }
-  .ornament span {
-    width: 6px; height: 6px; background: rgba(169, 129, 47, 0.8);
-    transform: rotate(45deg); flex: none;
-  }
+
   /* ---------- Écrans ---------- */
   .screen { display: none; flex: 1; flex-direction: column; }
   .screen.active { display: flex; animation: rise 0.45s ease both; }
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: none; }
-  }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
   /* ---------- Prénom ---------- */
-  .ask {
-    font-family: var(--serif); font-weight: 600; font-size: 27px;
-    text-align: center; margin-top: 12px;
-  }
-  .hint {
-    font-size: 13px; color: var(--ink-soft); text-align: center;
-    margin-top: 8px; line-height: 1.5;
-  }
+  .ask { font-family: var(--serif); font-weight: 600; font-size: 29px; text-align: center; margin-top: 38px; }
+  .hint { font-size: 13px; color: var(--cream-2); text-align: center; margin-top: 10px; line-height: 1.55; }
   input.name {
     font-family: var(--serif); font-size: 26px; font-weight: 600;
-    text-align: center; color: var(--ink);
-    background: transparent; border: none;
-    border-bottom: 1px solid rgba(169, 129, 47, 0.6);
-    width: 100%; max-width: 280px; margin: 26px auto 0;
-    padding: 6px 4px 10px; border-radius: 0; outline: none;
+    text-align: center; color: var(--cream);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px;
+    width: 100%; margin: 32px auto 0; display: block;
+    padding: 16px 18px; outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
-  input.name:focus { border-bottom-color: var(--gold); }
-  input.name::placeholder { color: rgba(107, 93, 72, 0.45); font-style: italic; }
+  input.name:focus { border-color: rgba(216, 169, 78, 0.65); box-shadow: 0 0 0 4px rgba(216, 169, 78, 0.12); }
+  input.name::placeholder { color: rgba(244, 237, 224, 0.35); font-style: italic; }
+
   /* ---------- Boutons ---------- */
   .btn {
     display: block; width: 100%; border: none; cursor: pointer;
     font-family: var(--sans); font-size: 16px; font-weight: 700;
-    color: var(--paper); letter-spacing: 0.3px;
-    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
-    padding: 15px 20px; border-radius: 999px;
-    box-shadow: 0 8px 22px rgba(169, 129, 47, 0.35);
-    transition: transform 0.15s ease, opacity 0.2s ease;
+    color: var(--on-gold); letter-spacing: 0.4px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+    padding: 17px 20px; border-radius: 999px;
+    box-shadow: 0 12px 32px rgba(216, 169, 78, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn:not(:disabled) { animation: halo-btn 2.6s ease-in-out infinite alternate; }
+  @keyframes halo-btn {
+    from { box-shadow: 0 12px 32px rgba(216, 169, 78, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
+    to { box-shadow: 0 12px 44px rgba(216, 169, 78, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.35); }
   }
   .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: 0.4; box-shadow: none; cursor: default; }
+  .btn:disabled { opacity: 0.4; box-shadow: none; cursor: default; animation: none; }
   .btn-ghost {
-    display: block; width: 100%; border: 1px solid rgba(169, 129, 47, 0.5);
-    background: transparent; cursor: pointer; color: var(--ink);
-    font-family: var(--sans); font-size: 15px; font-weight: 600;
-    padding: 13px 20px; border-radius: 999px; margin-top: 10px;
-    transition: transform 0.15s ease;
+    display: block; width: 100%; border: 1px solid rgba(216, 169, 78, 0.5);
+    background: transparent; cursor: pointer; color: var(--cream);
+    font-family: var(--sans); font-size: 14.5px; font-weight: 600;
+    padding: 15px 20px; border-radius: 999px; margin-top: 10px;
+    transition: transform 0.15s ease, background 0.2s ease;
   }
-  .btn-ghost:active { transform: scale(0.97); }
+  .btn-ghost:active { transform: scale(0.97); background: rgba(216, 169, 78, 0.08); }
+  .btn-quiet {
+    display: block; width: 100%; border: none; background: transparent; cursor: pointer;
+    color: var(--cream-2); font-family: var(--sans); font-size: 12.5px; font-weight: 600;
+    padding: 12px 20px 4px; transition: color 0.15s ease;
+  }
+  .btn-quiet:hover { color: var(--cream); }
   .btn-row { margin-top: auto; padding-top: 26px; }
-  /* ---------- Cartes cocktail ---------- */
-  .greeting {
-    font-family: var(--serif); font-style: italic; font-size: 19px;
-    text-align: center; margin-top: 16px; color: var(--ink);
-  }
+
+  /* ---------- Notation ---------- */
+  .greeting { font-family: var(--serif); font-style: italic; font-size: 18.5px; text-align: center; margin-top: 16px; }
   .greeting .who { font-style: normal; font-weight: 700; }
-  .intro {
-    font-size: 13px; color: var(--ink-soft); text-align: center;
-    margin-top: 6px; line-height: 1.5;
-  }
+  .intro { font-size: 12.5px; color: var(--cream-2); text-align: center; margin: 5px 0 15px; line-height: 1.5; }
+  #cocktail-list { display: flex; flex-direction: column; gap: 13px; }
   .cocktail {
-    border-top: 1px solid var(--hairline);
-    padding: 18px 2px 20px; margin-top: 4px;
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 22px;
+    padding: 17px 16px 14px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    animation: rise 0.5s ease both;
+    animation-delay: calc(var(--i, 0) * 60ms);
   }
-  .cocktail:first-of-type { border-top: none; margin-top: 10px; }
-  .c-head { display: flex; align-items: baseline; gap: 12px; }
-  .c-num {
-    font-family: var(--serif); font-weight: 600; font-size: 14px;
-    color: var(--gold);
-  }
-  .c-name {
-    font-family: var(--serif); font-weight: 700; font-size: 23px;
-    letter-spacing: -0.2px; flex: 1;
-  }
+  .cocktail.rated { border-color: rgba(216, 169, 78, 0.42); box-shadow: 0 0 26px rgba(216, 169, 78, 0.13); }
+  .c-head { display: flex; align-items: baseline; gap: 10px; }
+  .c-num { font-family: var(--serif); font-weight: 600; font-size: 13px; color: var(--label); }
+  .c-name { font-family: var(--serif); font-weight: 700; font-size: 23px; letter-spacing: -0.2px; flex: 1; }
   .c-score {
-    font-family: var(--serif); font-weight: 700; font-size: 21px;
-    color: var(--gold); min-width: 52px; text-align: right;
+    font-family: var(--serif); font-weight: 700; font-size: 27px;
+    color: var(--gold-light); min-width: 54px; text-align: right;
     font-variant-numeric: tabular-nums;
   }
-  .c-score small { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
-  .dots { display: flex; gap: 4px; margin-top: 14px; justify-content: space-between; }
+  .c-score small { font-size: 13px; font-weight: 600; color: var(--cream-2); }
+  .c-score b { font-weight: 700; display: inline-block; }
+  .c-score b.pop { animation: pop 0.3s ease; }
+  @keyframes pop { 0% { opacity: 0.2; transform: translateY(5px) scale(0.8); } 60% { transform: translateY(-1px) scale(1.08); } 100% { opacity: 1; transform: none; } }
+
+  /* Les dix notes — des perles d'or qui s'allument.
+     Toucher OU balayer horizontalement (le défilement vertical reste natif). */
+  .dots { display: flex; justify-content: space-between; margin-top: 6px; touch-action: pan-y; }
   .dot {
-    flex: 1 1 0; min-width: 0; max-width: 30px;
-    aspect-ratio: 1 / 1; height: auto; padding: 0;
-    border-radius: 50%;
-    border: 1px solid rgba(169, 129, 47, 0.5);
-    background: transparent; cursor: pointer; flex: none;
-    font-size: 11px; font-weight: 600; color: var(--ink-soft);
-    font-family: var(--sans);
-    transition: background 0.15s ease, transform 0.12s ease, color 0.15s ease;
-    -webkit-tap-highlight-color: transparent;
+    flex: 1 1 0; min-width: 0; max-width: 32px;
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    padding: 8px 0 4px; background: transparent; border: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent; font-family: var(--sans);
   }
-  .dot:active { transform: scale(0.88); }
-  .dot.on {
-    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
-    border-color: transparent; color: var(--paper);
+  .dot .dm {
+    width: 15px; height: 15px; border-radius: 50%; display: block;
+    border: 1px solid rgba(244, 237, 224, 0.22); background: rgba(255, 255, 255, 0.03);
+    transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
   }
+  .dot .dn {
+    font-size: 10px; font-weight: 500; color: var(--cream-3);
+    font-variant-numeric: tabular-nums; transition: color 0.16s ease;
+  }
+  .dot.on .dm {
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+    border-color: transparent;
+    box-shadow: 0 0 8px rgba(216, 169, 78, 0.4);
+  }
+  .dot.cur .dm {
+    transform: scale(1.3);
+    box-shadow: 0 0 0 4px rgba(216, 169, 78, 0.15), 0 0 14px rgba(216, 169, 78, 0.6);
+  }
+  .dot.cur .dn { color: var(--gold-light); font-weight: 700; }
+  .reaction {
+    display: flex; justify-content: flex-end; min-height: 17px; margin-top: 2px;
+    font-family: var(--serif); font-style: italic; font-size: 14.5px; color: var(--gold-light);
+  }
+  .reaction span.pop { animation: pop 0.3s ease; }
   textarea.comment {
-    width: 100%; margin-top: 14px; resize: none;
+    width: 100%; margin-top: 3px; resize: none;
     font-family: var(--serif); font-style: italic; font-size: 16px;
-    color: var(--ink); background: transparent;
-    border: none; border-bottom: 1px solid var(--hairline);
+    color: var(--cream); background: transparent;
+    border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     padding: 4px 2px 8px; outline: none; border-radius: 0;
     min-height: 32px; overflow: hidden;
+    transition: border-color 0.2s ease;
   }
-  textarea.comment:focus { border-bottom-color: rgba(169, 129, 47, 0.6); }
-  textarea.comment::placeholder { color: rgba(107, 93, 72, 0.45); }
-  .progress {
-    text-align: center; font-size: 12.5px; color: var(--ink-soft);
-    margin-top: 18px;
+  textarea.comment:focus { border-bottom-color: rgba(216, 169, 78, 0.6); }
+  textarea.comment::placeholder { color: rgba(244, 237, 224, 0.32); }
+
+  /* La barre d'action — collée en bas, à portée de pouce. */
+  .actionbar {
+    position: sticky; bottom: 0; z-index: 10;
+    margin: 0 -6px; padding: 20px 6px calc(10px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(11, 10, 9, 0) 0%, var(--bg) 42%);
   }
-  /* ---------- Confirmation ---------- */
-  .big-emoji { font-size: 54px; text-align: center; margin-top: 46px; }
-  .thanks {
-    font-family: var(--serif); font-weight: 700; font-size: 34px;
-    text-align: center; margin-top: 18px;
+  .gauge { height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+  .gauge i {
+    display: block; height: 3px; width: 0;
+    background: linear-gradient(90deg, var(--gold), var(--gold-deep));
+    box-shadow: 0 0 10px rgba(216, 169, 78, 0.7);
+    transition: width 0.35s ease;
   }
-  .thanks-sub {
-    font-size: 14.5px; color: var(--ink-soft); text-align: center;
-    margin-top: 12px; line-height: 1.6; padding: 0 12px;
+  .progress { text-align: center; font-size: 12px; color: var(--cream-2); margin-top: 9px; }
+  .actionbar .btn { margin-top: 11px; }
+
+  /* ---------- Merci ---------- */
+  .halo {
+    width: 108px; height: 108px; border-radius: 50%;
+    border: 1px solid rgba(216, 169, 78, 0.55);
+    box-shadow: 0 0 0 8px rgba(216, 169, 78, 0.08), 0 0 44px rgba(216, 169, 78, 0.28);
+    background: radial-gradient(circle at 50% 38%, rgba(216, 169, 78, 0.16), rgba(216, 169, 78, 0) 70%);
+    display: flex; align-items: center; justify-content: center;
+    margin: 36px auto 0; position: relative;
   }
+  .halo .glass { font-size: 52px; transform: translateY(-2px); }
+  .screen.active .halo .glass { animation: clink 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both 0.15s; }
+  @keyframes clink { 0% { opacity: 0; transform: translateY(6px) scale(0.6); } 100% { opacity: 1; transform: translateY(-2px) scale(1); } }
+  #fizz { position: absolute; inset: 0; pointer-events: none; }
+  #fizz i {
+    position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; opacity: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  .fizzing #fizz i { animation: drift 1.15s ease-out both; animation-delay: var(--fd); }
+  @keyframes drift {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    14% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.3); }
+  }
+  .thanks { font-family: var(--serif); font-weight: 700; font-size: 38px; text-align: center; margin-top: 24px; text-wrap: balance; }
+  .thanks-sub { font-size: 14px; color: var(--cream-2); text-align: center; margin-top: 10px; line-height: 1.6; padding: 0 12px; }
+  #recap {
+    margin-top: 28px;
+    background: var(--glass); border: 1px solid var(--stroke);
+    border-radius: 22px; padding: 18px 18px 6px;
+  }
+  #recap .eyebrow { font-size: 9.5px; letter-spacing: 3px; text-indent: 3px; }
+  #recap .rows { margin-top: 4px; }
+  .recap-row { display: flex; align-items: baseline; gap: 10px; padding: 13px 0 12px; border-top: 1px solid var(--hairline); }
+  .recap-row:first-child { border-top: none; }
+  .recap-row .n { font-family: var(--serif); font-weight: 600; font-size: 12px; color: var(--label); }
+  .recap-row .c { font-family: var(--serif); font-weight: 700; font-size: 19px; flex: 1; }
+  .recap-row .s { font-family: var(--serif); font-weight: 700; font-size: 19px; color: var(--gold-light); font-variant-numeric: tabular-nums; }
+  .recap-row .s small { font-size: 12px; font-weight: 600; color: var(--cream-2); }
+  .recap-note { font-family: var(--serif); font-style: italic; font-size: 14.5px; color: rgba(244, 237, 224, 0.6); margin: -6px 0 10px 22px; line-height: 1.45; }
+
   /* ---------- Panneau de secours (envoi par message) ---------- */
   .rescue {
-    margin-top: 26px; padding: 18px;
-    border: 1px solid rgba(169, 129, 47, 0.4);
-    background: rgba(169, 129, 47, 0.06);
+    margin-top: 26px; padding: 20px 18px 18px;
+    background: var(--glass);
+    border: 1px solid rgba(216, 169, 78, 0.45); border-radius: 22px;
   }
-  .rescue p { font-size: 13.5px; line-height: 1.55; color: var(--ink); }
-  .rescue .btn { margin-top: 14px; }
-  /* ---------- Vue hôte (résultats) ---------- */
-  .result { border-top: 1px solid var(--hairline); padding: 18px 2px 20px; }
-  .result:first-of-type { border-top: none; margin-top: 10px; }
-  .r-head { display: flex; align-items: baseline; gap: 12px; }
-  .r-name { font-family: var(--serif); font-weight: 700; font-size: 22px; flex: 1; }
-  .r-avg { font-family: var(--serif); font-weight: 700; font-size: 26px; color: var(--gold); }
-  .r-avg small { font-size: 14px; color: var(--ink-soft); font-weight: 600; }
-  .r-count { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
-  .review { margin-top: 12px; padding-left: 12px; border-left: 2px solid rgba(169, 129, 47, 0.35); }
+  .rescue .eyebrow { text-align: left; font-size: 9.5px; letter-spacing: 3px; text-indent: 3px; }
+  .rescue p { font-size: 13.5px; line-height: 1.55; color: var(--cream); margin-top: 10px; }
+  .rescue .btn { margin-top: 16px; }
+
+  /* ---------- Vue hôte ---------- */
+  #host-list { display: flex; flex-direction: column; gap: 13px; }
+  .result {
+    background: var(--glass); border: 1px solid var(--stroke); border-radius: 22px;
+    padding: 17px 16px 16px;
+    animation: rise 0.5s ease both; animation-delay: calc(var(--i, 0) * 60ms);
+  }
+  .result.best { border-color: rgba(216, 169, 78, 0.42); box-shadow: 0 0 26px rgba(216, 169, 78, 0.13); }
+  .fav { font-size: 8.5px; font-weight: 700; letter-spacing: 2px; color: var(--gold-light); margin-bottom: 8px; }
+  .r-head { display: flex; align-items: baseline; gap: 10px; }
+  .r-num { font-family: var(--serif); font-weight: 600; font-size: 13px; color: var(--label); }
+  .r-name { font-family: var(--serif); font-weight: 700; font-size: 22px; letter-spacing: -0.2px; flex: 1; }
+  .r-avg { font-family: var(--serif); font-weight: 700; font-size: 30px; color: var(--gold-light); font-variant-numeric: tabular-nums; }
+  .r-avg small { font-size: 13px; color: var(--cream-2); font-weight: 600; }
+  .gaugeline { height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.08); margin-top: 10px; overflow: hidden; }
+  .gaugeline i { display: block; height: 3px; background: linear-gradient(90deg, var(--gold), var(--gold-deep)); box-shadow: 0 0 8px rgba(216, 169, 78, 0.6); }
+  .r-count { font-size: 12px; color: var(--cream-2); margin-top: 9px; }
+  .review { margin-top: 12px; padding-left: 12px; border-left: 2px solid rgba(216, 169, 78, 0.45); }
   .review .who { font-size: 13.5px; font-weight: 700; }
-  .review .note { color: var(--gold); font-weight: 700; }
-  .review .text {
-    font-family: var(--serif); font-style: italic; font-size: 15.5px;
-    color: var(--ink-soft); margin-top: 2px; line-height: 1.45;
-  }
+  .review .note { color: var(--gold-light); font-weight: 700; }
+  .review .text { font-family: var(--serif); font-style: italic; font-size: 15.5px; color: rgba(244, 237, 224, 0.62); margin-top: 3px; line-height: 1.5; }
   .empty-note {
-    text-align: center; color: var(--ink-soft); font-size: 14px;
-    line-height: 1.6; margin-top: 40px; padding: 0 16px;
+    text-align: center; color: var(--cream-2); font-size: 14px;
+    line-height: 1.65; margin-top: 44px; padding: 0 16px;
   }
+  .empty-note em { font-family: var(--serif); font-style: italic; font-size: 17px; color: var(--cream); }
+
+  /* ---------- Erreur ---------- */
+  .error-box { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 0 8px 50px; }
+  .error-box .title { font-family: var(--serif); font-weight: 700; font-size: 31px; margin-top: 28px; }
+  .error-box .sub { font-size: 14px; color: var(--cream-2); line-height: 1.65; margin-top: 12px; }
+  .error-box .filet { margin-top: 30px; }
+
   /* ---------- Pied ---------- */
   .brand {
-    text-align: center; font-size: 11.5px; font-weight: 600;
-    color: var(--gold); margin-top: 30px; padding-top: 8px;
+    text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.3px;
+    color: rgba(201, 162, 39, 0.85); margin-top: 26px;
   }
-  .error-box { text-align: center; margin-top: 60px; padding: 0 10px; }
-  .error-box .big-emoji { margin-top: 0; }
   .spin {
-    width: 22px; height: 22px; margin: 0 auto;
-    border: 2.5px solid rgba(251, 247, 239, 0.4);
-    border-top-color: var(--paper); border-radius: 50%;
+    width: 20px; height: 20px; margin: 0 auto;
+    border: 2.5px solid rgba(23, 19, 10, 0.25);
+    border-top-color: var(--on-gold); border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Sobriété quand le système le demande. */
+  @media (prefers-reduced-motion: reduce) {
+    .screen.active, .cocktail, .result, .screen.active .halo .glass,
+    .btn:not(:disabled), #bulles i { animation: none; }
+    .fizzing #fizz i { animation: none; }
+    .dot .dm, .gauge i, .c-score b.pop, .reaction span.pop { transition: none; animation: none; }
+  }
 </style>
 </head>
 <body>
-<div class="frame">
+<div id="bulles" aria-hidden="true">
+  <i style="left: 8%;  width: 4px; height: 4px; --bt: 19s; --bd: -3s;"></i>
+  <i style="left: 21%; width: 3px; height: 3px; --bt: 24s; --bd: -11s;"></i>
+  <i style="left: 34%; width: 5px; height: 5px; --bt: 16s; --bd: -7s;"></i>
+  <i style="left: 49%; width: 3px; height: 3px; --bt: 22s; --bd: -15s;"></i>
+  <i style="left: 63%; width: 4px; height: 4px; --bt: 18s; --bd: -1s;"></i>
+  <i style="left: 77%; width: 3px; height: 3px; --bt: 25s; --bd: -9s;"></i>
+  <i style="left: 90%; width: 4px; height: 4px; --bt: 20s; --bd: -5s;"></i>
+</div>
+<div id="colonne">
   <header id="header" hidden>
     <div class="eyebrow">TCHIN</div>
     <h1 class="party" id="party-name"></h1>
     <div class="date" id="party-date"></div>
-    <div class="ornament"><span></span></div>
+    <div class="filet"></div>
   </header>
 
   <!-- Lien invalide -->
   <section class="screen" id="screen-error">
     <div class="error-box">
-      <div class="big-emoji">🥂</div>
-      <p class="thanks" style="font-size:26px;">Ce lien est incomplet</p>
-      <p class="thanks-sub">Il manque le menu de la soirée. Rescannez le QR code de la carte, ou demandez le lien à votre hôte.</p>
+      <div class="eyebrow">TCHIN</div>
+      <div class="halo"><span class="glass">🥂</span></div>
+      <p class="title">Ce lien est incomplet</p>
+      <p class="sub">Il manque le menu de la soirée. Rescannez le QR code de la carte, ou demandez le lien à votre hôte.</p>
+      <div class="filet"></div>
     </div>
   </section>
 
@@ -273,22 +389,40 @@ const TCHIN_CONFIG = {
   <!-- 2. Les avis -->
   <section class="screen" id="screen-rate">
     <p class="greeting">À vous, <span class="who" id="greet-name"></span>.</p>
-    <p class="intro">Notez les cocktails que vous avez goûtés — laissez les autres de côté.</p>
-    <div id="cocktail-list"></div>
-    <p class="progress" id="progress"></p>
-    <div class="btn-row">
+    <p class="intro">Notez les cocktails que vous avez goûtés —<br>laissez les autres de côté.</p>
+    <div id="cocktail-list" style="flex: 1; align-content: flex-start;"></div>
+    <div class="actionbar">
+      <div class="gauge"><i id="gauge-fill"></i></div>
+      <p class="progress" id="progress"></p>
       <button class="btn" id="btn-send" disabled>Envoyer mes avis</button>
-      <button class="btn-ghost" id="btn-other-name">Ce n'est pas mon prénom</button>
+      <button class="btn-quiet" id="btn-other-name">Ce n'est pas mon prénom&nbsp;?</button>
     </div>
   </section>
 
   <!-- 3. Merci -->
   <section class="screen" id="screen-done">
-    <div class="big-emoji">🥂</div>
+    <div class="halo">
+      <span class="glass">🥂</span>
+      <div id="fizz" aria-hidden="true">
+        <i style="--dx: -46px; --dy: -74px; --fd: 0.05s;"></i>
+        <i style="--dx: 38px; --dy: -86px; --fd: 0.12s;"></i>
+        <i style="--dx: -72px; --dy: -30px; --fd: 0.2s;"></i>
+        <i style="--dx: 70px; --dy: -44px; --fd: 0.08s;"></i>
+        <i style="--dx: -30px; --dy: -96px; --fd: 0.28s;"></i>
+        <i style="--dx: 12px; --dy: -102px; --fd: 0.16s;"></i>
+        <i style="--dx: 58px; --dy: -78px; --fd: 0.32s;"></i>
+        <i style="--dx: -58px; --dy: -66px; --fd: 0.38s;"></i>
+      </div>
+    </div>
     <p class="thanks" id="done-title">Merci&nbsp;!</p>
     <p class="thanks-sub" id="done-sub">Vos avis sont bien arrivés. Belle soirée&nbsp;!</p>
+    <div id="recap" hidden>
+      <div class="eyebrow">VOS AVIS</div>
+      <div class="rows" id="recap-rows"></div>
+    </div>
     <div id="rescue-panel" hidden class="rescue">
-      <p><strong>L'envoi automatique n'a pas fonctionné</strong> (pas de réseau, ou base non configurée). Envoyez vos avis à votre hôte en un geste&nbsp;:</p>
+      <div class="eyebrow">L'ENVOI N'A PAS ABOUTI</div>
+      <p>Pas de réseau, ou base non configurée. Envoyez vos avis à votre hôte en un geste — le message est déjà écrit&nbsp;:</p>
       <button class="btn" id="btn-share">Envoyer par message</button>
       <button class="btn-ghost" id="btn-copy">Copier mes avis</button>
     </div>
@@ -299,10 +433,10 @@ const TCHIN_CONFIG = {
 
   <!-- Vue hôte : les résultats -->
   <section class="screen" id="screen-host">
-    <p class="greeting" style="margin-top:14px;">Les avis de vos invités</p>
-    <div id="host-list"></div>
+    <p class="greeting" style="margin-top: 16px; margin-bottom: 14px;">Les avis de vos invités</p>
+    <div id="host-list" style="flex: 1; align-content: flex-start;"></div>
     <p class="empty-note" id="host-empty" hidden></p>
-    <div class="btn-row">
+    <div class="actionbar">
       <button class="btn" id="btn-refresh">Actualiser</button>
     </div>
   </section>
@@ -347,6 +481,7 @@ function hasBackend() {
 
 /* ---------- Petites aides ---------- */
 const $ = id => document.getElementById(id);
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 function show(id) {
   document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
   const el = $(id);
@@ -370,6 +505,12 @@ function frenchDate(iso) {
 function cleanName(raw) {
   const name = raw.trim().replace(/\s+/g, " ");
   return name ? name.charAt(0).toUpperCase() + name.slice(1) : "";
+}
+function numero(index) { return String(index + 1).padStart(2, "0"); }
+/* Le petit mot qui accompagne chaque note — la notation devient un jeu. */
+function reactionFor(rating) {
+  return ["", "Aïe…", "Aïe…", "Bof…", "Bof…", "Moyen", "Correct", "Bien",
+          "Très bon", "Excellent", "Exceptionnel !"][rating] || "";
 }
 
 /* ---------- État ---------- */
@@ -433,7 +574,7 @@ function initGuest() {
   $("btn-copy").addEventListener("click", copyReviews);
 
   show("screen-name");
-  if (!guestName) setTimeout(() => input.focus(), 350);
+  if (!guestName) setTimeout(() => input.focus(), 400);
 }
 
 function startRating() {
@@ -443,6 +584,27 @@ function startRating() {
   $("greet-name").textContent = guestName;
   buildCocktailList();
   show("screen-rate");
+  /* Les commentaires restaurés d'une visite précédente reprennent leur
+     hauteur une fois l'écran visible (scrollHeight vaut 0 tant qu'il est
+     caché) — puis à nouveau quand la police est prête (métriques finales). */
+  fitComments();
+  if (document.fonts) document.fonts.ready.then(fitComments);
+}
+
+function fitComments() {
+  document.querySelectorAll("textarea.comment").forEach(t => {
+    if (t.value) { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+  });
+}
+
+function setRating(cocktail, n) {
+  const entry = ratings[cocktail] || {};
+  const changed = entry.rating !== n;
+  entry.rating = n;
+  ratings[cocktail] = entry;
+  store.set("draft", ratings);
+  paint(changed ? cocktail : null);
+  if (changed && navigator.vibrate && !reducedMotion.matches) navigator.vibrate(6);
 }
 
 function buildCocktailList() {
@@ -450,30 +612,59 @@ function buildCocktailList() {
   list.textContent = "";
   party.cocktails.forEach((cocktail, index) => {
     const card = el("div", "cocktail");
+    card.style.setProperty("--i", index);
     const head = el("div", "c-head");
     head.append(
-      el("span", "c-num", String(index + 1).padStart(2, "0")),
+      el("span", "c-num", numero(index)),
       el("span", "c-name", cocktail)
     );
     const score = el("span", "c-score");
     head.append(score);
     card.append(head);
 
+    /* Dix perles d'or : chaque note se touche, ou se balaie d'un doigt. */
     const dots = el("div", "dots");
+    dots.setAttribute("role", "radiogroup");
+    dots.setAttribute("aria-label", `Note pour ${cocktail}`);
     for (let n = 1; n <= 10; n++) {
-      const dot = el("button", "dot", String(n));
+      const dot = el("button", "dot");
       dot.type = "button";
+      dot.setAttribute("role", "radio");
+      dot.setAttribute("aria-checked", "false");
       dot.setAttribute("aria-label", `${n} sur 10 pour ${cocktail}`);
-      dot.addEventListener("click", () => {
-        const entry = ratings[cocktail] || {};
-        entry.rating = n;
-        ratings[cocktail] = entry;
-        store.set("draft", ratings);
-        paint();
-      });
+      dot.append(el("i", "dm"), el("span", "dn", String(n)));
+      dot.addEventListener("click", () => setRating(cocktail, n));
       dots.append(dot);
     }
+    /* Balayage horizontal : la note suit le doigt (le défilement vertical reste au navigateur). */
+    let sweep = null;
+    const valueFromX = x => {
+      const r = dots.getBoundingClientRect();
+      return Math.max(1, Math.min(10, Math.ceil((x - r.left) / r.width * 10)));
+    };
+    dots.addEventListener("pointerdown", e => {
+      if (e.pointerType === "mouse" && e.buttons !== 1) return;
+      sweep = { x: e.clientX, y: e.clientY, dragging: false, id: e.pointerId };
+    });
+    dots.addEventListener("pointermove", e => {
+      if (!sweep || e.pointerId !== sweep.id) return;
+      if (!sweep.dragging) {
+        const dx = Math.abs(e.clientX - sweep.x), dy = Math.abs(e.clientY - sweep.y);
+        if (dx > 8 && dx > dy * 1.2) {
+          sweep.dragging = true;
+          try { dots.setPointerCapture(e.pointerId); } catch {}
+        } else if (dy > 10) { sweep = null; return; }
+      }
+      if (sweep && sweep.dragging) setRating(cocktail, valueFromX(e.clientX));
+    });
+    const endSweep = () => { sweep = null; };
+    dots.addEventListener("pointerup", endSweep);
+    dots.addEventListener("pointercancel", endSweep);
     card.append(dots);
+
+    const reaction = el("div", "reaction");
+    reaction.append(el("span", "", ""));
+    card.append(reaction);
 
     const comment = el("textarea", "comment");
     comment.placeholder = "Un mot ? (facultatif)";
@@ -496,24 +687,35 @@ function buildCocktailList() {
   paint();
 }
 
-/* Rafraîchit points, scores et progression depuis `ratings`. */
-function paint() {
+/* Rafraîchit perles, scores, réactions et progression depuis `ratings`. */
+function paint(popFor) {
   let rated = 0;
   document.querySelectorAll(".cocktail").forEach(card => {
     const cocktail = card.dataset.cocktail;
     const rating = ratings[cocktail]?.rating || 0;
     if (rating > 0) rated += 1;
+    card.classList.toggle("rated", rating > 0);
     card.querySelectorAll(".dot").forEach((dot, i) => {
       dot.classList.toggle("on", i < rating);
+      dot.classList.toggle("cur", i + 1 === rating);
+      dot.setAttribute("aria-checked", i + 1 === rating ? "true" : "false");
     });
     const score = card.querySelector(".c-score");
     score.textContent = "";
     if (rating > 0) {
-      score.append(document.createTextNode(rating));
-      score.append(el("small", "", "/10"));
+      const b = el("b", "", String(rating));
+      if (popFor === cocktail && !reducedMotion.matches) b.className = "pop";
+      score.append(b, el("small", "", "/10"));
+    }
+    const reaction = card.querySelector(".reaction span");
+    reaction.textContent = reactionFor(rating);
+    reaction.classList.remove("pop");
+    if (popFor === cocktail && rating > 0 && !reducedMotion.matches) {
+      requestAnimationFrame(() => reaction.classList.add("pop"));
     }
   });
   const total = party.cocktails.length;
+  $("gauge-fill").style.width = (rated / total * 100).toFixed(0) + "%";
   $("progress").textContent = rated === 0
     ? "Touchez une note pour commencer"
     : `${rated} cocktail${rated > 1 ? "s" : ""} noté${rated > 1 ? "s" : ""} sur ${total}`;
@@ -568,12 +770,42 @@ async function submit() {
   button.disabled = false;
 
   $("rescue-panel").hidden = ok;
-  $("done-title").textContent = ok ? `Merci ${guestName} !` : `Presque, ${guestName}…`;
+  $("done-title").textContent = ok ? `Merci, ${guestName} !` : `Presque, ${guestName}…`;
   $("done-sub").textContent = ok
     ? "Vos avis sont bien arrivés. Belle soirée !"
     : "Vos avis sont prêts — il ne reste qu'à les faire parvenir à votre hôte.";
   if (ok) store.set("sent", true);
+  buildRecap(rows);
   show("screen-done");
+
+  /* Un instant de fête — huit éclats d'or, une seule fois. */
+  const doneScreen = $("screen-done");
+  doneScreen.classList.remove("fizzing");
+  if (ok && !reducedMotion.matches) {
+    requestAnimationFrame(() => doneScreen.classList.add("fizzing"));
+    setTimeout(() => doneScreen.classList.remove("fizzing"), 1700);
+  }
+}
+
+/* Le récapitulatif de ce qui vient de partir, dans l'ordre du menu. */
+function buildRecap(rows) {
+  const recap = $("recap");
+  const holder = $("recap-rows");
+  holder.textContent = "";
+  const byName = new Map(rows.map(r => [r.cocktail, r]));
+  let shown = 0;
+  party.cocktails.forEach((cocktail, index) => {
+    const row = byName.get(cocktail);
+    if (!row) return;
+    shown += 1;
+    const line = el("div", "recap-row");
+    const s = el("span", "s", String(row.rating));
+    s.append(el("small", "", "/10"));
+    line.append(el("span", "n", numero(index)), el("span", "c", cocktail), s);
+    holder.append(line);
+    if (row.comment) holder.append(el("div", "recap-note", `« ${row.comment} »`));
+  });
+  recap.hidden = shown === 0;
 }
 
 /* ---------- Secours : par message ---------- */
@@ -614,10 +846,17 @@ function initHost() {
 async function loadResults() {
   const list = $("host-list");
   const empty = $("host-empty");
+  const button = $("btn-refresh");
   list.textContent = "";
   empty.hidden = true;
+  button.disabled = true;
+  const label = button.textContent;
+  button.textContent = "";
+  button.append(el("div", "spin"));
+  const restore = () => { button.textContent = label; button.disabled = false; };
 
   if (!hasBackend()) {
+    restore();
     empty.hidden = false;
     empty.textContent = "La base des avis n'est pas encore configurée — renseignez SUPABASE_URL et SUPABASE_ANON_KEY dans index.html (voir le README du dépôt tchin-avis).";
     return;
@@ -635,14 +874,19 @@ async function loadResults() {
     if (!response.ok) throw new Error(String(response.status));
     rows = await response.json();
   } catch {
+    restore();
     empty.hidden = false;
     empty.textContent = "Impossible de charger les avis pour l'instant. Vérifiez la connexion et réessayez.";
     return;
   }
+  restore();
 
   if (rows.length === 0) {
     empty.hidden = false;
-    empty.textContent = "Aucun avis pour l'instant. Laissez la carte sur la table, les avis arriveront 🥂";
+    empty.textContent = "";
+    empty.append(el("em", "", "Aucun avis pour l'instant."));
+    empty.append(document.createElement("br"));
+    empty.append(document.createTextNode("Laissez la carte sur la table, les avis arriveront 🥂"));
     return;
   }
 
@@ -654,17 +898,44 @@ async function loadResults() {
     byCocktail.get(row.cocktail).push(row);
   }
 
+  /* Le coup de cœur : la meilleure moyenne (l'ordre du menu, lui, ne bouge pas). */
+  const averages = new Map();
   for (const [cocktail, reviews] of byCocktail) {
+    if (reviews.length > 0) {
+      averages.set(cocktail, reviews.reduce((s, r) => s + r.rating, 0) / reviews.length);
+    }
+  }
+  const bestAvg = Math.max(...averages.values());
+
+  let index = 0, position = 0, favDone = false;
+  for (const [cocktail, reviews] of byCocktail) {
+    index += 1;
     if (reviews.length === 0) continue;
+    const average = averages.get(cocktail);
     const block = el("div", "result");
+    block.style.setProperty("--i", position);
+    position += 1;
+
+    if (!favDone && average === bestAvg && averages.size > 1) {
+      favDone = true;
+      block.classList.add("best");
+      block.append(el("div", "fav", "★ COUP DE CŒUR DE LA SOIRÉE"));
+    }
+
     const head = el("div", "r-head");
-    head.append(el("span", "r-name", cocktail));
-    const average = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+    head.append(el("span", "r-num", numero(index - 1)), el("span", "r-name", cocktail));
     const avg = el("span", "r-avg",
       average.toLocaleString("fr-FR", { maximumFractionDigits: 1 }));
     avg.append(el("small", "", " /10"));
     head.append(avg);
     block.append(head);
+
+    const gauge = el("div", "gaugeline");
+    const fill = el("i");
+    fill.style.width = (average * 10).toFixed(0) + "%";
+    gauge.append(fill);
+    block.append(gauge);
+
     block.append(el("div", "r-count",
       `${reviews.length} avis · ${reviews.map(r => r.guest_name).join(", ")}`));
 
