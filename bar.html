@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Tchin — Le bar</title>
+<meta name="theme-color" content="#0B0A09">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍸</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+<script src="config.js?v=2"></script>
+<script src="commun.js?v=2"></script>
+<style>
+  :root {
+    --bg: #0B0A09;
+    --glow: #1D150C;
+    --surface: #16130F;
+    --glass: rgba(255, 255, 255, 0.055);
+    --stroke: rgba(255, 255, 255, 0.10);
+    --hairline: rgba(255, 255, 255, 0.08);
+    --gold: #D8A94E;
+    --gold-deep: #B87333;
+    --gold-light: #E8C87E;
+    --label: #C9A227;
+    --on-gold: #17130A;
+    --cream: #F4EDE0;
+    --cream-2: rgba(244, 237, 224, 0.55);
+    --cream-3: rgba(244, 237, 224, 0.45);
+    --mint: #8FC9A0;
+    --copper: #DBB08C;
+    --danger: #E0685C;
+    --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--sans); color: var(--cream);
+    background: radial-gradient(ellipse 75% 42% at 50% -6%, var(--glow) 0%, rgba(11, 10, 9, 0) 62%), var(--bg);
+    background-attachment: fixed;
+    min-height: 100vh; min-height: 100dvh;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid rgba(216, 169, 78, 0.8); outline-offset: 3px; }
+
+  #page { max-width: 640px; margin: 0 auto; padding: 22px 16px calc(24px + env(safe-area-inset-bottom)); }
+  @media (min-width: 900px) { #page { max-width: 1240px; padding: 28px 28px 32px; } }
+
+  .eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: 4px; color: var(--label); }
+  .top { display: flex; align-items: flex-start; gap: 12px; }
+  .top .titles { flex: 1; min-width: 0; }
+  .top h1 { font-family: var(--serif); font-weight: 700; font-size: 30px; line-height: 1.05; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .live { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--cream-2); margin-top: 6px; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 0 rgba(143, 201, 160, 0.6); animation: live 2s ease-in-out infinite; }
+  .live.off i { background: var(--danger); animation: none; }
+  @keyframes live { 0%, 100% { box-shadow: 0 0 0 0 rgba(143, 201, 160, 0.55); } 50% { box-shadow: 0 0 0 6px rgba(143, 201, 160, 0); } }
+  .icon-btn {
+    flex: none; height: 40px; min-width: 40px; padding: 0 12px; border-radius: 999px; cursor: pointer;
+    background: var(--glass); border: 1px solid var(--stroke); font-size: 13px; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .icon-btn.on { border-color: rgba(216, 169, 78, 0.6); color: var(--gold-light); }
+
+  /* ---------- Bar ouvert / fermé ---------- */
+  .service {
+    margin-top: 18px; display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 18px; background: var(--glass); border: 1px solid var(--stroke);
+  }
+  .service.closed { border-color: rgba(224, 104, 92, 0.5); background: rgba(224, 104, 92, 0.07); }
+  .service .s-text { flex: 1; min-width: 0; }
+  .service .s-text b { display: block; font-size: 15px; }
+  .service .s-text span { display: block; font-size: 12px; color: var(--cream-2); margin-top: 2px; }
+  .switch {
+    flex: none; width: 54px; height: 32px; border-radius: 999px; border: none; cursor: pointer; position: relative;
+    background: rgba(255, 255, 255, 0.14); transition: background 0.2s ease;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--cream); transition: transform 0.2s ease;
+  }
+  .switch[aria-checked="true"] { background: linear-gradient(135deg, var(--gold), var(--gold-deep)); }
+  .switch[aria-checked="true"]::after { transform: translateX(22px); }
+  .pause-msg {
+    width: 100%; margin-top: 10px; font-size: 15px; color: var(--cream);
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px; padding: 12px 14px; outline: none;
+  }
+  .pause-msg:focus { border-color: rgba(216, 169, 78, 0.65); }
+
+  /* ---------- Onglets (téléphone) / colonnes (tablette) ---------- */
+  .tabs { display: flex; gap: 6px; margin-top: 16px; background: var(--glass); border: 1px solid var(--stroke); border-radius: 999px; padding: 4px; }
+  .tab {
+    flex: 1; border: none; background: none; cursor: pointer; border-radius: 999px;
+    padding: 10px 6px; font-size: 13px; font-weight: 700; color: var(--cream-2);
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;
+  }
+  .tab .n { font-variant-numeric: tabular-nums; font-size: 12px; min-width: 20px; padding: 1px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); }
+  .tab.on { background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: var(--on-gold); }
+  .tab.on .n { background: rgba(23, 19, 10, 0.18); }
+  .board { margin-top: 14px; }
+  .col { display: none; }
+  .board[data-tab="en_attente"] .col[data-col="en_attente"],
+  .board[data-tab="en_preparation"] .col[data-col="en_preparation"],
+  .board[data-tab="servie"] .col[data-col="servie"] { display: block; }
+  .col-head { display: none; }
+  @media (min-width: 900px) {
+    .tabs { display: none; }
+    .board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start; }
+    .col { display: block !important; }
+    .col-head { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 10px; }
+    .col-head b { font-size: 11px; letter-spacing: 3px; color: var(--label); }
+    .col-head span { font-size: 12px; color: var(--cream-2); font-variant-numeric: tabular-nums; }
+  }
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .empty { text-align: center; color: var(--cream-3); font-size: 13.5px; padding: 34px 10px; font-family: var(--serif); font-style: italic; font-size: 17px; }
+
+  /* ---------- Une commande ---------- */
+  .order {
+    background: var(--glass); border: 1px solid var(--stroke); border-radius: 20px; padding: 14px 14px 12px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .order.fresh { border-color: rgba(216, 169, 78, 0.7); box-shadow: 0 0 28px rgba(216, 169, 78, 0.22); animation: arrive 0.5s ease both; }
+  @keyframes arrive { from { opacity: 0; transform: translateY(-8px) scale(0.98); } to { opacity: 1; transform: none; } }
+  .o-top { display: flex; align-items: baseline; gap: 10px; }
+  .o-num { font-family: var(--serif); font-weight: 700; font-size: 30px; color: var(--gold-light); line-height: 1; font-variant-numeric: lining-nums tabular-nums; }
+  .o-who { flex: 1; min-width: 0; font-size: 18px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .o-time { font-size: 12px; font-weight: 600; color: var(--cream-2); white-space: nowrap; }
+  .o-time.late { color: var(--copper); }
+  .o-time.very-late { color: var(--danger); }
+  .o-where {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 9px;
+    font-size: 14px; font-weight: 700; color: var(--on-gold);
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep)); border-radius: 999px; padding: 5px 11px;
+  }
+  .o-what { font-family: var(--serif); font-weight: 700; font-size: 24px; margin-top: 8px; line-height: 1.1; }
+  .o-what .q { color: var(--gold-light); }
+  .o-note { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--copper); margin-top: 4px; }
+  .o-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .act {
+    flex: 1; border-radius: 999px; cursor: pointer; font-size: 15px; font-weight: 700; padding: 13px 12px; min-height: 48px;
+    border: none; background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: var(--on-gold);
+    transition: transform 0.12s ease, opacity 0.2s ease;
+  }
+  .act.serve { background: linear-gradient(135deg, #A8D9B5, #6FAF83); }
+  .act:active { transform: scale(0.97); }
+  .act:disabled { opacity: 0.5; }
+  .act-2 {
+    flex: none; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; padding: 0 14px; min-height: 48px;
+    background: transparent; border: 1px solid var(--stroke); color: var(--cream-2);
+  }
+  .act-2.armed { border-color: rgba(224, 104, 92, 0.7); color: var(--danger); }
+  .o-rating { margin-top: 10px; font-size: 13px; color: var(--cream-2); display: flex; flex-wrap: wrap; gap: 4px 12px; }
+  .o-rating b { color: var(--gold-light); }
+  .o-comment { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--cream); margin-top: 6px; }
+
+  /* ---------- Ruptures ---------- */
+  .section-title { display: flex; align-items: center; gap: 12px; margin: 28px 0 12px; }
+  .section-title b { font-size: 11px; letter-spacing: 3px; color: var(--label); white-space: nowrap; }
+  .section-title i { flex: 1; height: 1px; background: var(--hairline); }
+  .stock { display: flex; flex-wrap: wrap; gap: 8px; }
+  .stock button {
+    border-radius: 999px; padding: 10px 14px; cursor: pointer; font-size: 14px; font-weight: 600;
+    background: var(--glass); border: 1px solid var(--stroke);
+  }
+  .stock button.out { border-color: rgba(224, 104, 92, 0.6); color: var(--danger); text-decoration: line-through; }
+  .hint { font-size: 12px; color: var(--cream-3); margin-top: 8px; }
+
+  /* ---------- Écrans d'erreur ---------- */
+  .center { min-height: 70vh; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 0 12px; }
+  .center .t { font-family: var(--serif); font-weight: 700; font-size: 30px; margin-top: 14px; }
+  .center .s { font-size: 14px; color: var(--cream-2); line-height: 1.6; margin-top: 10px; }
+  .center .icon-btn { margin: 22px auto 0; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 50;
+    transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    max-width: min(420px, calc(100vw - 32px)); width: max-content;
+    background: rgba(22, 19, 15, 0.96); border: 1px solid rgba(216, 169, 78, 0.45);
+    border-radius: 18px; padding: 12px 18px; font-size: 14px; font-weight: 600; text-align: center;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6); transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .live i, .order.fresh { animation: none; }
+    #toast, .switch, .switch::after { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div id="page">
+  <!-- Lien invalide -->
+  <div class="center" id="v-error" hidden>
+    <div style="font-size: 48px;">🍸</div>
+    <p class="t">Lien d'équipe incomplet</p>
+    <p class="s">Demandez à l'organisateur de vous renvoyer le lien « barman » depuis l'app Tchin.</p>
+  </div>
+  <!-- Clé refusée / base absente / réseau -->
+  <div class="center" id="v-off" hidden>
+    <div style="font-size: 48px;">🍸</div>
+    <p class="t" id="off-t"></p>
+    <p class="s" id="off-s"></p>
+    <button class="icon-btn" onclick="location.reload()">Réessayer</button>
+  </div>
+
+  <div id="v-bar" hidden>
+    <div class="top">
+      <div class="titles">
+        <div class="eyebrow">TCHIN · LE BAR</div>
+        <h1 id="party-name"></h1>
+        <div class="live" id="live"><i></i><span id="live-text">En direct</span></div>
+      </div>
+      <button class="icon-btn" id="btn-sound" aria-pressed="false">🔕 Son</button>
+    </div>
+
+    <div class="service" id="service">
+      <div class="s-text">
+        <b id="service-title">Le bar est ouvert</b>
+        <span id="service-sub">Les invités peuvent commander.</span>
+      </div>
+      <button class="switch" id="switch-open" role="switch" aria-checked="true" aria-label="Bar ouvert"></button>
+    </div>
+    <input class="pause-msg" id="pause-msg" maxlength="200" hidden
+           placeholder="Message aux invités (ex. « Pause gâteau, on revient dans 15 min »)">
+
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="en_attente" role="tab">En attente <span class="n" id="n-en_attente">0</span></button>
+      <button class="tab" data-tab="en_preparation" role="tab">Préparation <span class="n" id="n-en_preparation">0</span></button>
+      <button class="tab" data-tab="servie" role="tab">Servies <span class="n" id="n-servie">0</span></button>
+    </div>
+    <div class="board" id="board" data-tab="en_attente">
+      <section class="col" data-col="en_attente">
+        <div class="col-head"><b>EN ATTENTE</b><span id="h-en_attente"></span></div>
+        <div class="list" id="list-en_attente"></div>
+      </section>
+      <section class="col" data-col="en_preparation">
+        <div class="col-head"><b>EN PRÉPARATION</b><span id="h-en_preparation"></span></div>
+        <div class="list" id="list-en_preparation"></div>
+      </section>
+      <section class="col" data-col="servie">
+        <div class="col-head"><b>SERVIES</b><span id="h-servie"></span></div>
+        <div class="list" id="list-servie"></div>
+      </section>
+    </div>
+
+    <div class="section-title"><b>RUPTURES</b><i></i></div>
+    <div class="stock" id="stock"></div>
+    <p class="hint">Touchez un cocktail épuisé : il devient indisponible pour les invités. Retouchez pour le remettre.</p>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const T = window.Tchin;
+const { $, el } = T;
+window.addEventListener("hashchange", () => location.reload());
+
+const party = T.decodePayload(["b"]);
+let soiree = null;
+let orders = [];
+let known = null;          // ids déjà vus (null = premier chargement)
+let fresh = new Set();     // commandes arrivées depuis le dernier coup d'œil
+/* id → { statut voulu, jusqu'à quand } : une action pas encore confirmée par la
+   base garde son statut local (pas de clignotement), sans jamais masquer
+   longtemps l'action d'un autre barman. */
+const pending = new Map();
+let tab = "en_attente";
+let soundOn = false;
+let audio = null;
+let lastOk = 0;
+let pollTimer = null;
+
+function toast(text) {
+  const t = $("toast");
+  t.textContent = text;
+  t.classList.add("show");
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+function off(title, sub) {
+  $("v-bar").hidden = true;
+  $("off-t").textContent = title;
+  $("off-s").textContent = sub;
+  $("v-off").hidden = false;
+}
+
+boot();
+
+async function boot() {
+  if (!party || !party.key) { $("v-error").hidden = false; return; }
+  document.title = `Le bar — ${party.name || "Tchin"}`;
+  $("party-name").textContent = party.name || "La soirée";
+  if (!T.hasBackend()) { off("Base non configurée", "Le site n'est pas relié à sa base de commandes."); return; }
+  wire();
+  await load();
+  if (soiree) { $("v-bar").hidden = false; schedule(); }
+}
+
+function wire() {
+  document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => {
+    tab = b.dataset.tab;
+    render();
+  }));
+  $("switch-open").addEventListener("click", toggleOpen);
+  $("pause-msg").addEventListener("change", () => saveSettings({ p_message: $("pause-msg").value.trim() }));
+  $("btn-sound").addEventListener("click", () => {
+    soundOn = !soundOn;
+    if (soundOn) {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      audio.resume();
+      ding();
+    }
+    $("btn-sound").textContent = soundOn ? "🔔 Son" : "🔕 Son";
+    $("btn-sound").classList.toggle("on", soundOn);
+    $("btn-sound").setAttribute("aria-pressed", String(soundOn));
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) { load(); schedule(); }
+  });
+}
+
+/* Deux notes cristallines, façon verres qui trinquent. */
+function ding() {
+  if (!soundOn || !audio) return;
+  const t0 = audio.currentTime;
+  [1318.5, 1975.5].forEach((freq, i) => {
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, t0 + i * 0.12);
+    gain.gain.linearRampToValueAtTime(0.25, t0 + i * 0.12 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + i * 0.12 + 0.9);
+    osc.connect(gain).connect(audio.destination);
+    osc.start(t0 + i * 0.12);
+    osc.stop(t0 + i * 0.12 + 1);
+  });
+}
+
+function schedule() {
+  clearTimeout(pollTimer);
+  pollTimer = setTimeout(async () => {
+    if (!document.hidden) await load();
+    schedule();
+  }, 3000);
+}
+
+async function load() {
+  try {
+    const data = await T.rpc("bar_commandes", { p_party: party.id, p_cle: party.key });
+    T.syncClock(data.soiree.maintenant);
+    soiree = data.soiree;
+    const incoming = data.commandes || [];
+    // Les actions pas encore confirmées gardent leur statut local (pas de clignotement).
+    const now = Date.now();
+    for (const o of incoming) {
+      const wanted = pending.get(o.id);
+      if (!wanted) continue;
+      if (wanted.statut === o.statut || wanted.until < now) pending.delete(o.id);
+      else o.statut = wanted.statut;
+    }
+    if (known) {
+      const nouveaux = incoming.filter(o => !known.has(o.id) && o.statut === "en_attente");
+      if (nouveaux.length) {
+        nouveaux.forEach(o => fresh.add(o.id));
+        ding();
+        if (navigator.vibrate) navigator.vibrate([60, 80, 60]);
+        const o = nouveaux[nouveaux.length - 1];
+        toast(nouveaux.length > 1
+          ? `${nouveaux.length} nouvelles commandes !`
+          : `Nouvelle commande · ${o.invite} — ${o.lieu}`);
+      }
+    }
+    known = new Set(incoming.map(o => o.id));
+    orders = incoming;
+    lastOk = Date.now();
+    render();
+  } catch (e) {
+    if (e.message === "cle_refusee") return off("Lien d'équipe refusé", "Ce lien ne correspond pas à la soirée. Redemandez-le à l'organisateur.");
+    if (e.message === "pas_installe") return off("Bar en ligne pas encore installé", "L'organisateur doit d'abord activer les commandes dans Supabase (commandes.sql).");
+    if (!soiree) return off("Impossible de joindre le bar", "Vérifiez la connexion puis réessayez.");
+    $("live").classList.add("off");
+    $("live-text").textContent = "Connexion perdue — on réessaie…";
+  }
+}
+
+function render() {
+  $("live").classList.remove("off");
+  $("live-text").textContent = "En direct";
+  const open = soiree.ouvert !== false;
+  $("switch-open").setAttribute("aria-checked", String(open));
+  $("service").classList.toggle("closed", !open);
+  $("service-title").textContent = open ? "Le bar est ouvert" : "Le bar est en pause";
+  $("service-sub").textContent = open ? "Les invités peuvent commander." : "Les invités voient votre message et ne peuvent plus commander.";
+  $("pause-msg").hidden = open;
+  if (document.activeElement !== $("pause-msg")) $("pause-msg").value = soiree.message || "";
+
+  const groups = { en_attente: [], en_preparation: [], servie: [] };
+  for (const o of orders) if (groups[o.statut]) groups[o.statut].push(o);
+  groups.servie.reverse(); // les derniers servis en haut
+  const waiting = groups.en_attente.length;
+  document.title = `${waiting ? `(${waiting}) ` : ""}Le bar — ${party.name || "Tchin"}`;
+
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  $("board").dataset.tab = tab;
+  for (const [statut, list] of Object.entries(groups)) {
+    $(`n-${statut}`).textContent = list.length;
+    $(`h-${statut}`).textContent = list.length;
+    const holder = $(`list-${statut}`);
+    holder.textContent = "";
+    if (!list.length) {
+      holder.append(el("p", "empty", {
+        en_attente: "Aucune commande en attente.",
+        en_preparation: "Rien en préparation.",
+        servie: "Rien de servi pour l'instant.",
+      }[statut]));
+    }
+    for (const o of list) holder.append(card(o));
+  }
+  renderStock();
+}
+
+function card(o) {
+  const node = el("article", "order");
+  if (fresh.has(o.id)) node.classList.add("fresh");
+  const top = el("div", "o-top");
+  const minutes = T.minutesSince(o.created_at);
+  const time = el("span", "o-time", o.statut === "servie" && o.servie_at ? `servie ${T.since(o.servie_at)}` : T.since(o.created_at));
+  if (o.statut !== "servie") {
+    if (minutes >= 15) time.classList.add("very-late");
+    else if (minutes >= 8) time.classList.add("late");
+  }
+  top.append(el("span", "o-num", String(o.numero)), el("span", "o-who", o.invite), time);
+  node.append(top);
+  node.append(el("div", "o-where", `📍 ${o.lieu}`));
+  const what = el("div", "o-what", o.cocktail);
+  if (o.quantite > 1) what.append(el("span", "q", ` × ${o.quantite}`));
+  node.append(what);
+  if (o.note) node.append(el("div", "o-note", `« ${o.note} »`));
+
+  if (o.statut === "servie" && o.notee_at) {
+    const r = el("div", "o-rating");
+    const parts = [["Cocktail", o.note_cocktail], ["Rapidité", o.note_rapidite], ["Service", o.note_service], ["Expérience", o.note_experience]];
+    for (const [label, value] of parts) {
+      if (!value) continue;
+      const span = el("span", "", `${label} `);
+      span.append(el("b", "", `${value}/5`));
+      r.append(span);
+    }
+    node.append(r);
+    if (o.commentaire) node.append(el("div", "o-comment", `« ${o.commentaire} »`));
+  }
+
+  const actions = el("div", "o-actions");
+  if (o.statut === "en_attente") {
+    actions.append(button("act", "Je prépare →", () => move(o, "en_preparation")));
+    actions.append(armed("Annuler", "Confirmer ?", () => move(o, "annulee")));
+  } else if (o.statut === "en_preparation") {
+    actions.append(button("act serve", "Servi ✓", () => move(o, "servie")));
+    actions.append(button("act-2", "↩︎", () => move(o, "en_attente"), "Remettre en attente"));
+  } else if (o.statut === "servie") {
+    actions.append(button("act-2", "↩︎ Pas encore servie", () => move(o, "en_preparation")));
+  }
+  node.append(actions);
+  node.addEventListener("pointerdown", () => fresh.delete(o.id), { once: true });
+  return node;
+}
+
+function button(className, text, action, label) {
+  const b = el("button", className, text);
+  b.type = "button";
+  if (label) b.setAttribute("aria-label", label);
+  b.addEventListener("click", action);
+  return b;
+}
+/* Action destructive en deux touches (pas de fenêtre de confirmation). */
+function armed(text, confirmText, action) {
+  const b = button("act-2", text, () => {
+    if (!b.classList.contains("armed")) {
+      b.classList.add("armed");
+      b.textContent = confirmText;
+      setTimeout(() => { b.classList.remove("armed"); b.textContent = text; }, 3000);
+      return;
+    }
+    action();
+  });
+  return b;
+}
+
+/* Changement de statut : affiché tout de suite, confirmé par la base ensuite. */
+async function move(order, statut) {
+  const before = order.statut;
+  pending.set(order.id, { statut, until: Date.now() + 8000 });
+  order.statut = statut;
+  fresh.delete(order.id);
+  if (statut === "servie") order.servie_at = new Date(Date.now()).toISOString();
+  if (navigator.vibrate) navigator.vibrate(12);
+  render();
+  try {
+    await T.rpc("commande_statut", { p_party: party.id, p_cle: party.key, p_id: order.id, p_statut: statut });
+  } catch (e) {
+    pending.delete(order.id);
+    order.statut = before;
+    render();
+    toast(e.message === "reseau" ? "Pas de réseau — réessayez." : "La mise à jour n'est pas passée.");
+  }
+}
+
+async function toggleOpen() {
+  const open = !(soiree.ouvert !== false);
+  soiree.ouvert = open;
+  render();
+  await saveSettings({ p_ouvert: open });
+  if (!open) $("pause-msg").focus();
+}
+
+async function saveSettings(patch) {
+  try {
+    soiree = await T.rpc("soiree_regler", { p_party: party.id, p_cle: party.key, ...patch });
+    render();
+  } catch {
+    toast("Le réglage n'est pas passé — réessayez.");
+    load();
+  }
+}
+
+function renderStock() {
+  const holder = $("stock");
+  holder.textContent = "";
+  const ruptures = (soiree.ruptures || []).map(r => String(r).toLowerCase());
+  for (const name of party.cocktails) {
+    const out = ruptures.includes(name.toLowerCase());
+    const b = button(out ? "out" : "", name, () => {
+      const next = out
+        ? (soiree.ruptures || []).filter(r => String(r).toLowerCase() !== name.toLowerCase())
+        : [...(soiree.ruptures || []), name];
+      soiree.ruptures = next;
+      render();
+      saveSettings({ p_ruptures: next });
+      toast(out ? `${name} est de retour 🍸` : `${name} : indisponible pour les invités`);
+    });
+    b.setAttribute("aria-pressed", String(out));
+    holder.append(b);
+  }
+}
+</script>
+</body>
+</html>

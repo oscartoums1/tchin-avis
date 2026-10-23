@@ -1,72 +1,76 @@
-# Tchin — Vos avis
+# Tchin — le site des invités
 
 Le site que les invités ouvrent en scannant le QR code du menu imprimé par
 l'app Tchin. Il affiche **exactement les cocktails de la soirée** (la
 sélection voyage dans l'URL, encodée par l'app — aucune base nécessaire pour
-imprimer un menu), demande le **prénom** de l'invité, puis recueille une
-**note sur 10** et un commentaire par cocktail.
+imprimer un menu).
 
-- `…/#m=<payload>` — le parcours invité (prénom → notes → envoi) ;
-- `…/#r=<payload>` — la vue hôte (moyennes, nombre d'avis, commentaires),
-  ouverte depuis l'app via « Voir les avis des invités ».
+| Page | Lien | Pour qui |
+| --- | --- | --- |
+| `commande.html` | `#c=<payload>` | **Les invités commandent** (QR des menus actuels) |
+| `bar.html` | `#b=<payload>.<clé>` | L'équipe gère les commandes (lien secret partagé depuis l'app) |
+| `index.html` | `#m=` / `#r=` | Avis par cocktail — l'ancien système, gardé pour les menus déjà imprimés |
 
-Chaque avis enregistré est rattaché à **Soirée → Cocktail → Invité**
-(`party_id`, `cocktail`, `guest_name`, `rating`, `comment`).
+Payload : base64url de `1|<partyId>|<nom>|<aaaa-mm-jj>|<cocktail1>~<cocktail2>…`.
 
-## Le design
+## Le bar en direct (commandes)
 
-« Nuit dorée » : le thème Signature de l'app (charbon chaud `#0B0A09`,
-or `#D8A94E`, crème `#F4EDE0`, Cormorant Garamond) porté au web — cartes
-de verre, bulles de champagne en fond, perles d'or lumineuses pour la note.
-La note se donne au toucher ou d'un **balayage horizontal** du doigt (le
-défilement vertical reste natif), chaque note déclenche sa réaction
-(« Très bon », « Exceptionnel ! »…), la carte notée s'illumine, et la vue
-hôte couronne le **coup de cœur de la soirée**. Les animations respectent
-`prefers-reduced-motion`.
+1. **L'invité** scanne le QR du menu → donne son prénom (une fois) → touche
+   un cocktail → quantité, **où il est** (les lieux de la salle définis dans
+   l'app, ou un endroit libre) et une précision éventuelle → « Commander ».
+   Il suit ensuite sa commande en direct : reçue (avec sa place dans la
+   file et l'attente estimée) → en préparation → servie. Une fois servi, il
+   note **le cocktail, la rapidité, le service et l'expérience** (1 à 5) et
+   laisse un mot s'il veut. Il peut annuler tant que rien n'est commencé.
+2. **L'hôte**, dans l'app (Soirée → Bar en direct), reçoit les commandes en
+   temps réel (son, vibration, toast) avec le prénom et l'endroit, les fait
+   avancer en un tap, voit le bilan (verres servis, attente moyenne, avis,
+   commentaires), met le bar en pause avec un message, déclare des
+   ruptures, et peut partager le lien `bar.html` à qui l'aide au bar.
 
-**Aucun build** : un seul `index.html` en HTML/CSS/JS vanilla, zéro
-dépendance (hors polices Google en `font-display: swap`). Déployer =
-commit + push, comme avant.
+La page et l'app se resynchronisent toutes les 3 à 5 secondes (pas de
+WebSocket : robuste sur un réseau de salle des fêtes).
 
-## Mise en service (une seule fois)
+### Sécurité
 
-1. **GitHub Pages** — sur ce dépôt : Settings → Pages → « Deploy from a
-   branch » → branche `main`, dossier `/ (root)` → Save.
-   Le site vit alors sur `https://oscartoums1.github.io/tchin-avis/`
-   (l'URL que l'app met déjà dans les QR codes — `ReviewSite.baseURL`).
+La clé « anon » est publique (elle est dans `config.js`) : elle n'a **aucun
+accès direct** aux tables `soirees` et `commandes` (RLS sans policy +
+droits retirés). Tout passe par des fonctions de la base :
 
-2. **Supabase** (le stockage des avis) —
-   1. créer un projet sur [supabase.com](https://supabase.com) (offre gratuite) ;
-   2. SQL Editor → coller le contenu de `setup.sql` → Run ;
-   3. Settings → API : copier « Project URL » et la clé « anon public » ;
-   4. les coller dans le bloc `TCHIN_CONFIG` en haut d'`index.html`, commit, push.
+- l'hôte présente la **clé secrète de la soirée**, générée par l'app et
+  gardée sur son téléphone (la base n'en stocke que l'empreinte SHA-256) ;
+  le QR des invités ne la contient pas ;
+- chaque invité a un **jeton aléatoire** dans son navigateur : il ne voit,
+  n'annule et ne note que ses propres commandes.
 
-Sans l'étape 2, le site fonctionne quand même en mode dégradé : l'invité
-compose ses avis puis les **envoie par message** à l'hôte (feuille de
-partage), au lieu de les déposer dans la base.
+## Mise en service
+
+1. **GitHub Pages** — Settings → Pages → « Deploy from a branch » → `main`,
+   `/ (root)`. Le site vit sur `https://oscartoums1.github.io/tchin-avis/`
+   (`GuestSite.baseURL` dans l'app).
+2. **Supabase** — projet gratuit, puis SQL Editor → New query :
+   - `setup.sql` (les avis, ancien système) ;
+   - **`commandes.sql`** (le bar en direct) → Run. La dernière ligne du
+     résultat doit afficher **« Bar en direct installé et vérifié ✓ »** : le
+     script se teste lui-même de bout en bout et ne laisse aucune trace.
+     Ré-exécutable sans risque.
+3. URL du projet et clé « anon public » dans **`config.js`** (une seule
+   source pour toutes les pages) — et dans `LiveBarBackend.swift` côté app.
+
+⚠️ L'offre gratuite de Supabase **met le projet en pause après 7 jours sans
+activité** (l'adresse du projet ne répond plus du tout). Avant une soirée :
+dashboard Supabase → le projet → « Restore project », puis ouvrir le bar
+dans l'app pour vérifier.
 
 ## Notes
 
-- **Mise à jour depuis l'ancien site : remplacer `index.html`, rien
-  d'autre.** URLs, payload, clés `localStorage` (`tchin:<partyId>:name`,
-  `:draft`, `:sent`, `tchin:config`) et appels Supabase sont inchangés —
-  les QR codes imprimés et les brouillons des invités restent valables.
-- L'invité peut marquer un cocktail « **Je n'y ai pas goûté** » : la carte
-  s'estompe, la progression avance, rien n'est envoyé pour ce cocktail
-  (état purement local, dans son brouillon).
-- L'hôte (vue `#r=`, ouverte depuis l'app) peut **supprimer un avis** :
-  ✕ sur l'avis → confirmation. L'avis n'est pas détruit, son `party_id`
-  est préfixé `corbeille:` (récupérable dans le Table Editor) — aucune
-  policy DELETE nécessaire.
-- Ré-envoyer ses avis **met à jour** les précédents (contrainte unique
-  soirée + prénom + cocktail, envoi en `merge-duplicates`) — pas de doublons.
-- Deux invités qui partagent le même prénom à la même soirée écrasent
-  mutuellement leurs avis : qu'ils ajoutent une initiale (« Léa B. »).
-- La clé « anon public » est faite pour être publiée côté client ; la RLS
-  ne permet que déposer/mettre à jour/lire des avis, rien d'autre.
-- Test local : servir le dossier (`python3 -m http.server`) et passer une
-  config de test via
+- Aucun build : HTML/CSS/JS vanilla, zéro dépendance (hors polices Google).
+  Déployer = commit + push. `commun.js` regroupe le décodage du lien et les
+  appels à la base pour `commande.html` et `bar.html`.
+- Avis par cocktail (`index.html`) : ré-envoyer met à jour (contrainte unique
+  soirée + prénom + cocktail) ; l'hôte peut mettre un avis à la corbeille
+  (`party_id` préfixé `corbeille:`, récupérable) ; « Je n'y ai pas goûté »
+  reste local.
+- Test local : servir le dossier (`python3 -m http.server`) et poser une
+  config de test :
   `localStorage.setItem('tchin:config', JSON.stringify({SUPABASE_URL:"…", SUPABASE_ANON_KEY:"…"}))`.
-  Payload d'essai :
-  `#m=MXx0ZXN0LWVuLWxpZ25lfFNvaXLDqWUgZGUgdGVzdHwyMDI2LTA4LTI5fE1vaml0b35CZWxsaW5p`
-  (remplacer `m` par `r` pour la vue hôte).

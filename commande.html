@@ -1,0 +1,1130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tchin — Commander</title>
+<meta name="theme-color" content="#0B0A09">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍸</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
+<script src="config.js?v=2"></script>
+<script src="commun.js?v=2"></script>
+<style>
+  :root {
+    --bg: #0B0A09;
+    --glow: #1D150C;
+    --glass: rgba(255, 255, 255, 0.055);
+    --stroke: rgba(255, 255, 255, 0.10);
+    --hairline: rgba(255, 255, 255, 0.08);
+    --gold: #D8A94E;
+    --gold-deep: #B87333;
+    --gold-light: #E8C87E;
+    --label: #C9A227;
+    --on-gold: #17130A;
+    --cream: #F4EDE0;
+    --cream-2: rgba(244, 237, 224, 0.55);
+    --cream-3: rgba(244, 237, 224, 0.45);
+    --mint: #8FC9A0;
+    --copper: #DBB08C;
+    --danger: #E0685C;
+    --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--sans);
+    color: var(--cream);
+    background: radial-gradient(ellipse 75% 42% at 50% -6%, var(--glow) 0%, rgba(11, 10, 9, 0) 62%), var(--bg);
+    background-attachment: fixed;
+    min-height: 100vh; min-height: 100dvh;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid rgba(216, 169, 78, 0.8); outline-offset: 3px; }
+  ::selection { background: rgba(216, 169, 78, 0.35); }
+
+  /* ---------- Bulles de champagne ---------- */
+  #bulles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  #bulles i {
+    position: absolute; bottom: -12px; border-radius: 50%;
+    background: rgba(216, 169, 78, 0.5);
+    animation: bulle var(--bt, 18s) linear var(--bd, 0s) infinite;
+  }
+  @keyframes bulle {
+    0% { transform: translateY(0); opacity: 0; }
+    12% { opacity: 0.65; }
+    88% { opacity: 0.45; }
+    100% { transform: translateY(-105vh); opacity: 0; }
+  }
+
+  #colonne {
+    position: relative; z-index: 1;
+    max-width: 480px; margin: 0 auto;
+    min-height: 100vh; min-height: 100dvh;
+    padding: 44px 22px calc(16px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column;
+  }
+  @media (min-width: 700px) { #colonne { max-width: 540px; padding: 60px 24px 24px; } }
+
+  /* ---------- En-tête ---------- */
+  .eyebrow {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 5.5px;
+    color: var(--label); text-align: center; text-indent: 5.5px;
+  }
+  h1.party {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(30px, 9.5vw, 44px); line-height: 1.05;
+    letter-spacing: -0.5px; text-align: center; margin-top: 12px;
+    text-wrap: balance;
+  }
+  .date {
+    font-family: var(--serif); font-style: italic; font-size: 16px;
+    color: var(--cream-2); text-align: center; margin-top: 8px;
+  }
+  .filet {
+    height: 1px; margin-top: 20px;
+    background: linear-gradient(90deg, rgba(216, 169, 78, 0) 0%, rgba(216, 169, 78, 0.55) 50%, rgba(216, 169, 78, 0) 100%);
+  }
+
+  /* ---------- Écrans ---------- */
+  .screen { display: none; flex: 1; flex-direction: column; }
+  .screen.active { display: flex; animation: rise 0.4s ease both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+  .ask { font-family: var(--serif); font-weight: 600; font-size: 29px; text-align: center; margin-top: 34px; line-height: 1.15; text-wrap: balance; }
+  .hint { font-size: 13px; color: var(--cream-2); text-align: center; margin-top: 10px; line-height: 1.55; }
+  input.name {
+    font-family: var(--serif); font-size: 26px; font-weight: 600;
+    text-align: center; color: var(--cream);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px;
+    width: 100%; margin: 30px auto 0; display: block;
+    padding: 16px 18px; outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  input.name:focus { border-color: rgba(216, 169, 78, 0.65); box-shadow: 0 0 0 4px rgba(216, 169, 78, 0.12); }
+  input.name::placeholder { color: rgba(244, 237, 224, 0.35); font-style: italic; }
+
+  /* ---------- Boutons ---------- */
+  .btn {
+    display: block; width: 100%; border: none; cursor: pointer;
+    font-family: var(--sans); font-size: 16px; font-weight: 700;
+    color: var(--on-gold); letter-spacing: 0.3px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+    padding: 17px 20px; border-radius: 999px; min-height: 54px;
+    box-shadow: 0 12px 32px rgba(216, 169, 78, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: transform 0.15s ease, opacity 0.2s ease;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; box-shadow: none; cursor: default; }
+  .btn-ghost {
+    display: block; width: 100%; border: 1px solid rgba(216, 169, 78, 0.5);
+    background: transparent; cursor: pointer; color: var(--cream);
+    font-size: 14.5px; font-weight: 600;
+    padding: 15px 20px; border-radius: 999px; margin-top: 10px;
+    transition: transform 0.15s ease, background 0.2s ease;
+  }
+  .btn-ghost:active { transform: scale(0.97); background: rgba(216, 169, 78, 0.08); }
+  .btn-quiet {
+    display: block; width: 100%; border: none; background: transparent; cursor: pointer;
+    color: var(--cream-2); font-size: 13px; font-weight: 600;
+    padding: 13px 20px 6px; transition: color 0.15s ease;
+  }
+  .btn-quiet:hover { color: var(--cream); }
+  .btn-quiet.armed { color: var(--danger); }
+  .btn-row { margin-top: auto; padding-top: 24px; }
+  .back {
+    align-self: flex-start; background: none; border: none; cursor: pointer;
+    color: var(--cream-2); font-size: 13.5px; font-weight: 600;
+    padding: 18px 10px 6px 0; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .back:hover { color: var(--cream); }
+  .spin {
+    width: 20px; height: 20px; margin: 0 auto;
+    border: 2.5px solid rgba(23, 19, 10, 0.25);
+    border-top-color: var(--on-gold); border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- La carte ---------- */
+  .greeting { font-family: var(--serif); font-style: italic; font-size: 22px; text-align: center; margin-top: 18px; line-height: 1.2; text-wrap: balance; }
+  .greeting .who { font-style: normal; font-weight: 700; }
+  .not-me {
+    display: block; margin: 4px auto 14px; background: none; border: none; cursor: pointer;
+    color: var(--cream-3); font-size: 12px; font-weight: 600; padding: 6px 10px;
+  }
+  .banner {
+    margin: 4px 0 14px; padding: 15px 16px; border-radius: 18px; text-align: center;
+    background: rgba(216, 169, 78, 0.08); border: 1px solid rgba(216, 169, 78, 0.45);
+  }
+  .banner b { display: block; font-family: var(--serif); font-size: 20px; font-weight: 700; }
+  .banner span { display: block; font-size: 13px; color: var(--cream-2); margin-top: 4px; line-height: 1.5; }
+  #carte { display: flex; flex-direction: column; gap: 11px; padding-bottom: 8px; }
+  .drink {
+    display: flex; align-items: center; gap: 13px; width: 100%; text-align: left;
+    background: var(--glass); border: 1px solid var(--stroke); border-radius: 22px;
+    padding: 16px 15px 16px 16px; cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease;
+    animation: rise 0.45s ease both; animation-delay: calc(var(--i, 0) * 50ms);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .drink:active { transform: scale(0.98); background: rgba(216, 169, 78, 0.07); border-color: rgba(216, 169, 78, 0.45); }
+  /* Estompé sur les enfants : l'animation d'entrée fixe l'opacité de la carte elle-même. */
+  .drink:disabled { cursor: default; transform: none; }
+  .drink:disabled .d-num, .drink:disabled .d-name, .drink:disabled .d-detail { opacity: 0.45; }
+  .d-num { font-family: var(--serif); font-weight: 600; font-size: 13px; color: var(--label); align-self: flex-start; padding-top: 7px; }
+  .d-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .d-name { font-family: var(--serif); font-weight: 700; font-size: 23px; letter-spacing: -0.2px; line-height: 1.1; }
+  .d-detail { font-size: 12.5px; color: var(--cream-2); line-height: 1.45; }
+  .d-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 3px; }
+  .tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase;
+    color: var(--mint); border: 1px solid rgba(143, 201, 160, 0.4); border-radius: 999px; padding: 3px 8px;
+  }
+  .tag.out { color: var(--copper); border-color: rgba(219, 176, 140, 0.45); }
+  .d-go {
+    flex: none; width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: var(--on-gold);
+    font-size: 20px; font-weight: 700; line-height: 1;
+  }
+  .drink:disabled .d-go { background: rgba(255, 255, 255, 0.08); color: var(--cream-3); }
+
+  /* La barre du bas — « ma commande » toujours à portée de pouce. */
+  .actionbar {
+    position: sticky; bottom: 0; z-index: 10;
+    margin: 0 -6px; padding: 18px 6px calc(10px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(11, 10, 9, 0) 0%, var(--bg) 40%);
+  }
+  .pill {
+    display: flex; align-items: center; gap: 11px; width: 100%; cursor: pointer;
+    background: rgba(22, 19, 15, 0.92); border: 1px solid rgba(216, 169, 78, 0.5);
+    border-radius: 999px; padding: 10px 12px 10px 10px; text-align: left;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  }
+  .pill .p-num {
+    flex: none; min-width: 40px; height: 40px; border-radius: 999px; padding: 0 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: var(--on-gold);
+    font-family: var(--serif); font-weight: 700; font-size: 19px;
+  }
+  .pill .p-text { flex: 1; min-width: 0; }
+  .pill .p-text b { display: block; font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pill .p-text span { display: block; font-size: 12px; color: var(--gold-light); margin-top: 1px; }
+  .pill .p-chev { color: var(--cream-3); font-size: 18px; padding-right: 6px; }
+
+  /* ---------- Commander ---------- */
+  .o-name { font-family: var(--serif); font-weight: 700; font-size: clamp(34px, 11vw, 46px); line-height: 1.02; text-align: center; margin-top: 8px; letter-spacing: -0.5px; text-wrap: balance; }
+  .o-detail { font-size: 13px; color: var(--cream-2); text-align: center; margin-top: 8px; line-height: 1.5; }
+  .field { margin-top: 24px; }
+  .label { display: block; font-size: 10px; font-weight: 700; letter-spacing: 3px; color: var(--label); margin-bottom: 10px; }
+  .qty { display: flex; align-items: center; justify-content: center; gap: 22px; }
+  .qty button {
+    width: 52px; height: 52px; border-radius: 50%; cursor: pointer;
+    background: var(--glass); border: 1px solid var(--stroke); font-size: 24px; font-weight: 600;
+    transition: transform 0.15s ease;
+  }
+  .qty button:active { transform: scale(0.92); }
+  .qty button:disabled { opacity: 0.3; cursor: default; }
+  .qty output { font-family: var(--serif); font-weight: 700; font-size: 44px; min-width: 40px; text-align: center; font-variant-numeric: tabular-nums; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border-radius: 999px; padding: 11px 16px; cursor: pointer; font-size: 14.5px; font-weight: 600;
+    background: var(--glass); border: 1px solid var(--stroke);
+    transition: transform 0.12s ease, background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .chip:active { transform: scale(0.95); }
+  .chip.on { background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: var(--on-gold); border-color: transparent; }
+  input.text {
+    width: 100%; font-family: var(--sans); font-size: 16px; color: var(--cream);
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px; padding: 14px 16px; outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  input.text:focus { border-color: rgba(216, 169, 78, 0.65); box-shadow: 0 0 0 4px rgba(216, 169, 78, 0.12); }
+  input.text::placeholder { color: rgba(244, 237, 224, 0.35); }
+  .chips + input.text { margin-top: 10px; }
+  .field.missing .label { color: var(--danger); }
+  .field.missing input.text { border-color: rgba(224, 104, 92, 0.7); }
+  .shake { animation: shake 0.35s ease; }
+  @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+  /* ---------- Suivi ---------- */
+  .ticket {
+    margin-top: 22px; text-align: center; padding: 22px 18px 20px;
+    background: var(--glass); border: 1px solid rgba(216, 169, 78, 0.42); border-radius: 26px;
+    box-shadow: 0 0 34px rgba(216, 169, 78, 0.10);
+  }
+  .t-num { font-family: var(--serif); font-weight: 700; font-size: 26px; color: var(--cream-2); margin-top: 8px; }
+  .t-num b, .pill .p-num, .mine .m-num, .qty output { font-variant-numeric: lining-nums tabular-nums; }
+  .t-num b { font-size: 68px; color: var(--gold-light); line-height: 1; vertical-align: -6px; margin-left: 4px; }
+  .t-what { font-family: var(--serif); font-weight: 700; font-size: 26px; margin-top: 8px; }
+  .t-where { font-size: 13.5px; color: var(--cream-2); margin-top: 6px; }
+  .t-note { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--cream-2); margin-top: 6px; }
+  .steps { list-style: none; display: flex; margin-top: 26px; position: relative; }
+  .steps li { flex: 1; text-align: center; position: relative; font-size: 11.5px; font-weight: 600; color: var(--cream-3); padding-top: 26px; }
+  .steps li::before {
+    content: ""; position: absolute; top: 3px; left: 50%; transform: translateX(-50%);
+    width: 15px; height: 15px; border-radius: 50%; z-index: 1;
+    border: 1px solid rgba(244, 237, 224, 0.25); background: var(--bg);
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  .steps li::after {
+    content: ""; position: absolute; top: 10px; left: -50%; width: 100%; height: 1px;
+    background: rgba(244, 237, 224, 0.15);
+  }
+  .steps li:first-child::after { display: none; }
+  .steps li.done { color: var(--cream-2); }
+  .steps li.done::before { background: linear-gradient(135deg, var(--gold), var(--gold-deep)); border-color: transparent; }
+  .steps li.done::after { background: rgba(216, 169, 78, 0.6); }
+  .steps li.now { color: var(--gold-light); }
+  .steps li.now::before {
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep)); border-color: transparent;
+    animation: beat 1.6s ease-in-out infinite;
+  }
+  .steps li.now::after { background: rgba(216, 169, 78, 0.6); }
+  @keyframes beat {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(216, 169, 78, 0.55); }
+    50% { box-shadow: 0 0 0 9px rgba(216, 169, 78, 0); }
+  }
+  .s-head { font-family: var(--serif); font-weight: 700; font-size: 27px; text-align: center; margin-top: 24px; line-height: 1.15; text-wrap: balance; }
+  .s-info { font-size: 13.5px; color: var(--cream-2); text-align: center; margin-top: 8px; line-height: 1.55; }
+  .s-cancelled .ticket { opacity: 0.55; border-color: var(--stroke); box-shadow: none; }
+
+  /* ---------- Avis ---------- */
+  .rate {
+    margin-top: 22px; padding: 20px 16px 18px;
+    background: var(--glass); border: 1px solid var(--stroke); border-radius: 22px;
+  }
+  .rate .eyebrow { font-size: 9.5px; letter-spacing: 3px; text-indent: 3px; }
+  .crit { display: flex; align-items: center; gap: 8px; padding: 12px 0 10px; border-top: 1px solid var(--hairline); }
+  .crit:first-of-type { border-top: none; margin-top: 8px; }
+  .c-label { flex: 1; min-width: 0; font-family: var(--serif); font-weight: 700; font-size: 18px; line-height: 1.1; }
+  .c-label small { display: block; font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 13px; color: var(--gold-light); min-height: 16px; margin-top: 2px; }
+  .stars { display: flex; gap: 2px; touch-action: pan-y; }
+  .star {
+    width: 38px; height: 40px; display: flex; align-items: center; justify-content: center;
+    background: none; border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .star i {
+    width: 19px; height: 19px; border-radius: 50%; display: block;
+    border: 1px solid rgba(244, 237, 224, 0.25); background: rgba(255, 255, 255, 0.03);
+    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  }
+  .star.on i { background: linear-gradient(135deg, var(--gold), var(--gold-deep)); border-color: transparent; box-shadow: 0 0 8px rgba(216, 169, 78, 0.45); }
+  .star.cur i { transform: scale(1.22); }
+  textarea.comment {
+    width: 100%; margin-top: 10px; resize: none; min-height: 36px;
+    font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--cream);
+    background: transparent; border: none; border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 6px 2px 8px; outline: none; border-radius: 0;
+  }
+  textarea.comment:focus { border-bottom-color: rgba(216, 169, 78, 0.6); }
+  textarea.comment::placeholder { color: rgba(244, 237, 224, 0.32); }
+  .rate .btn { margin-top: 16px; }
+  .rate-done { text-align: center; margin-top: 22px; font-family: var(--serif); font-size: 19px; font-style: italic; color: var(--gold-light); }
+
+  /* ---------- Mes commandes ---------- */
+  .ask.small { font-size: 26px; margin-top: 16px; }
+  #mes-list { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+  .mine {
+    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; cursor: pointer;
+    background: var(--glass); border: 1px solid var(--stroke); border-radius: 18px; padding: 13px 14px;
+  }
+  .mine .m-num { font-family: var(--serif); font-weight: 700; font-size: 22px; color: var(--gold-light); min-width: 38px; }
+  .mine .m-body { flex: 1; min-width: 0; }
+  .mine .m-body b { display: block; font-family: var(--serif); font-size: 19px; font-weight: 700; }
+  .mine .m-body span { display: block; font-size: 12px; color: var(--cream-2); margin-top: 2px; }
+  .status {
+    flex: none; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    border-radius: 999px; padding: 5px 9px; border: 1px solid var(--stroke); color: var(--cream-2);
+  }
+  .status.en_preparation { color: var(--gold-light); border-color: rgba(216, 169, 78, 0.5); }
+  .status.servie { color: var(--mint); border-color: rgba(143, 201, 160, 0.45); }
+  .status.annulee { opacity: 0.6; }
+
+  /* ---------- Hors service ---------- */
+  .center-box { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 0 8px 50px; }
+  .center-box .glass-emoji { font-size: 52px; }
+  .center-box .title { font-family: var(--serif); font-weight: 700; font-size: 30px; margin-top: 18px; text-wrap: balance; }
+  .center-box .sub { font-size: 14px; color: var(--cream-2); line-height: 1.65; margin-top: 12px; }
+  .center-box .btn-ghost { margin-top: 26px; }
+
+  /* ---------- Message éphémère ---------- */
+  #toast {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 50;
+    transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    max-width: min(420px, calc(100vw - 32px)); width: max-content;
+    background: rgba(22, 19, 15, 0.96); border: 1px solid rgba(216, 169, 78, 0.45);
+    border-radius: 18px; padding: 12px 18px; font-size: 14px; font-weight: 600; line-height: 1.45;
+    text-align: center; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+  #net {
+    position: fixed; top: calc(10px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+    z-index: 40; font-size: 11.5px; font-weight: 600; color: var(--cream-2);
+    background: rgba(22, 19, 15, 0.92); border: 1px solid var(--stroke); border-radius: 999px; padding: 6px 12px;
+  }
+
+  .brand { text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: rgba(201, 162, 39, 0.85); margin-top: 22px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .screen.active, .drink, #bulles i, .steps li.now::before, .shake { animation: none; }
+    #toast, .star i { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div id="bulles" aria-hidden="true">
+  <i style="left: 8%;  width: 4px; height: 4px; --bt: 19s; --bd: -3s;"></i>
+  <i style="left: 21%; width: 3px; height: 3px; --bt: 24s; --bd: -11s;"></i>
+  <i style="left: 34%; width: 5px; height: 5px; --bt: 16s; --bd: -7s;"></i>
+  <i style="left: 49%; width: 3px; height: 3px; --bt: 22s; --bd: -15s;"></i>
+  <i style="left: 63%; width: 4px; height: 4px; --bt: 18s; --bd: -1s;"></i>
+  <i style="left: 77%; width: 3px; height: 3px; --bt: 25s; --bd: -9s;"></i>
+  <i style="left: 90%; width: 4px; height: 4px; --bt: 20s; --bd: -5s;"></i>
+</div>
+<div id="net" hidden>Connexion perdue — on réessaie…</div>
+
+<div id="colonne">
+  <header id="header" hidden>
+    <div class="eyebrow">TCHIN</div>
+    <h1 class="party" id="party-name"></h1>
+    <div class="date" id="party-date"></div>
+    <div class="filet"></div>
+  </header>
+
+  <!-- Lien invalide -->
+  <section class="screen" id="screen-error">
+    <div class="center-box">
+      <div class="eyebrow">TCHIN</div>
+      <div class="glass-emoji" style="margin-top: 26px;">🍸</div>
+      <p class="title">Ce lien est incomplet</p>
+      <p class="sub">Il manque le menu de la soirée. Rescannez le QR code de la carte, ou demandez le lien à votre hôte.</p>
+    </div>
+  </section>
+
+  <!-- Commandes indisponibles -->
+  <section class="screen" id="screen-off">
+    <div class="center-box">
+      <div class="glass-emoji">🍸</div>
+      <p class="title" id="off-title">Le bar en ligne n'est pas encore ouvert</p>
+      <p class="sub" id="off-sub">Commandez directement au bar — on vous sert avec plaisir.</p>
+      <button class="btn-ghost" id="btn-retry">Réessayer</button>
+    </div>
+  </section>
+
+  <!-- Chargement -->
+  <section class="screen" id="screen-wait">
+    <div class="center-box"><div class="spin" style="border-color: rgba(216, 169, 78, 0.2); border-top-color: var(--gold);"></div></div>
+  </section>
+
+  <!-- 1. Le prénom -->
+  <section class="screen" id="screen-name">
+    <p class="ask">Bienvenue&nbsp;!<br>Quel est votre prénom&nbsp;?</p>
+    <p class="hint">Pour que le barman sache à qui apporter votre verre.</p>
+    <input class="name" id="input-name" type="text" autocomplete="given-name"
+           enterkeyhint="go" maxlength="30" placeholder="Camille, Tom, Mamie…">
+    <div class="btn-row">
+      <button class="btn" id="btn-start" disabled>Voir la carte 🍸</button>
+    </div>
+  </section>
+
+  <!-- 2. La carte -->
+  <section class="screen" id="screen-carte">
+    <p class="greeting">Que puis-je vous servir, <span class="who" id="greet-name"></span>&nbsp;?</p>
+    <button class="not-me" id="btn-not-me"></button>
+    <div class="banner" id="closed-banner" hidden>
+      <b>Le bar fait une petite pause</b>
+      <span id="closed-message">On revient très vite — gardez cette page ouverte.</span>
+    </div>
+    <div id="carte"></div>
+    <div class="actionbar" id="carte-bar" hidden>
+      <button class="pill" id="btn-mine">
+        <span class="p-num" id="pill-num"></span>
+        <span class="p-text"><b id="pill-title"></b><span id="pill-sub"></span></span>
+        <span class="p-chev" aria-hidden="true">›</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 3. Commander -->
+  <section class="screen" id="screen-order">
+    <button class="back" data-back>‹ La carte</button>
+    <div class="eyebrow" style="margin-top: 6px;">VOTRE COMMANDE</div>
+    <h2 class="o-name" id="order-name"></h2>
+    <p class="o-detail" id="order-detail"></p>
+
+    <div class="field">
+      <span class="label">COMBIEN&nbsp;?</span>
+      <div class="qty">
+        <button type="button" id="qty-minus" aria-label="Un de moins">−</button>
+        <output id="qty-value" aria-live="polite">1</output>
+        <button type="button" id="qty-plus" aria-label="Un de plus">+</button>
+      </div>
+    </div>
+
+    <div class="field" id="field-lieu">
+      <span class="label">OÙ ÊTES-VOUS&nbsp;?</span>
+      <div class="chips" id="lieux"></div>
+      <input class="text" id="lieu-autre" type="text" maxlength="60" enterkeyhint="done"
+             placeholder="Table, coin, emplacement…" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <span class="label">UNE PRÉCISION&nbsp;?</span>
+      <input class="text" id="order-note" type="text" maxlength="140" enterkeyhint="done"
+             placeholder="Sans glace, peu sucré… (facultatif)" autocomplete="off">
+    </div>
+
+    <div class="actionbar" style="margin-top: auto;">
+      <button class="btn" id="btn-order">Commander</button>
+    </div>
+  </section>
+
+  <!-- 4. Le suivi -->
+  <section class="screen" id="screen-suivi">
+    <button class="back" data-back>‹ La carte</button>
+    <div class="ticket">
+      <div class="eyebrow">COMMANDE</div>
+      <div class="t-num">N°<b id="t-num"></b></div>
+      <div class="t-what" id="t-what"></div>
+      <div class="t-where" id="t-where"></div>
+      <div class="t-note" id="t-note" hidden></div>
+    </div>
+    <ol class="steps" id="steps" aria-hidden="true">
+      <li data-step="en_attente">Reçue</li>
+      <li data-step="en_preparation">En préparation</li>
+      <li data-step="servie">Servie</li>
+    </ol>
+    <p class="s-head" id="s-head"></p>
+    <p class="s-info" id="s-info" aria-live="polite"></p>
+
+    <div class="rate" id="rate" hidden>
+      <div class="eyebrow">VOTRE AVIS</div>
+      <div id="crits"></div>
+      <textarea class="comment" id="rate-comment" rows="1" maxlength="280"
+                placeholder="Un mot pour le barman ? (facultatif)"></textarea>
+      <button class="btn" id="btn-rate" disabled>Envoyer mon avis</button>
+    </div>
+    <p class="rate-done" id="rate-done" hidden>Merci pour votre avis — santé&nbsp;! 🥂</p>
+
+    <div class="btn-row">
+      <button class="btn-ghost" id="btn-another">Commander autre chose</button>
+      <button class="btn-quiet" id="btn-cancel" hidden>Annuler ma commande</button>
+      <button class="btn-quiet" id="btn-early-rate" hidden>Déjà servi&nbsp;? Donner mon avis</button>
+    </div>
+  </section>
+
+  <!-- 5. Mes commandes -->
+  <section class="screen" id="screen-mes">
+    <button class="back" data-back>‹ La carte</button>
+    <p class="ask small">Vos commandes</p>
+    <div id="mes-list"></div>
+  </section>
+
+  <div class="brand">Fait maison avec Tchin 🥂</div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+const T = window.Tchin;
+const { $, el } = T;
+
+/* Si le lien change (autre soirée), on repart proprement. */
+window.addEventListener("hashchange", () => location.reload());
+
+const party = T.decodePayload(["c"]);
+const store = party ? T.store(party.id) : null;
+
+/* ---------- État ---------- */
+let jeton = "";
+let guestName = "";
+let soiree = null;        // la configuration publique de la soirée
+let orders = [];          // MES commandes (les plus récentes d'abord)
+let current = null;       // le cocktail en cours de commande
+let qty = 1;
+let lieuChoice = "";      // un lieu de la liste, « __autre », ou ""
+let trackingId = null;    // la commande affichée dans le suivi
+let earlyRate = false;    // l'invité a demandé à noter avant « servie »
+let ratings = {};
+let pollTimer = null;
+let nameFromCarte = false; // l'écran du prénom a été ouvert depuis la carte
+
+const CRITERES = [
+  ["cocktail", "Le cocktail"],
+  ["rapidite", "La rapidité"],
+  ["service", "Le service"],
+  ["experience", "L'expérience globale"],
+];
+const MOTS = ["", "Décevant", "Moyen", "Bien", "Très bien", "Parfait !"];
+const ERREURS = {
+  bar_ferme: "Le bar fait une petite pause — réessayez dans un instant.",
+  rupture: "Victime de son succès ! Ce cocktail n'est plus disponible.",
+  trop_de_commandes: "Vous avez déjà 5 commandes en cours — elles arrivent 😉",
+  lieu_manquant: "Dites-nous où vous êtes pour qu'on vous trouve.",
+  prenom_manquant: "Il nous manque votre prénom.",
+  annulation_impossible: "Trop tard : le barman a déjà commencé 🍸",
+  reseau: "Pas de réseau — réessayez dans un instant.",
+};
+const message = code => ERREURS[code] || "Un souci est survenu — réessayez dans un instant.";
+
+/* ---------- Navigation (le geste « retour » du téléphone marche aussi) ---------- */
+function show(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("active", s.id === id));
+  window.scrollTo({ top: 0 });
+  schedulePoll();
+}
+function go(id) {
+  history.pushState({ screen: id, tracking: trackingId }, "");
+  show(id);
+}
+window.addEventListener("popstate", e => {
+  const state = e.state || {};
+  if (state.tracking) trackingId = state.tracking;
+  if (state.screen === "screen-suivi") renderSuivi();
+  show(state.screen || (guestName ? "screen-carte" : "screen-name"));
+});
+document.querySelectorAll("[data-back]").forEach(b => b.addEventListener("click", () => history.back()));
+const activeScreen = () => document.querySelector(".screen.active")?.id;
+
+let toastTimer = null;
+function toast(text) {
+  const t = $("toast");
+  t.textContent = text;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
+}
+function buzz(pattern) {
+  if (navigator.vibrate && !T.reducedMotion.matches) navigator.vibrate(pattern);
+}
+
+/* ---------- Démarrage ---------- */
+boot();
+
+async function boot() {
+  if (!party) { show("screen-error"); return; }
+  $("header").hidden = false;
+  $("party-name").textContent = party.name || "La soirée";
+  $("party-date").textContent = T.frenchDate(party.date);
+  document.title = `${party.name || "Tchin"} — Commander`;
+
+  if (!T.hasBackend()) { showOff(); return; }
+  jeton = store.get("jeton", "");
+  if (!/^[a-f0-9]{32}$/.test(jeton)) {
+    jeton = T.randomToken();
+    store.set("jeton", jeton);
+  }
+  guestName = store.get("name", "");
+  wireUp();
+  show("screen-wait");
+  if (!(await refresh())) return;
+  buildCarte();
+  const first = guestName ? "screen-carte" : "screen-name";
+  history.replaceState({ screen: first }, "");
+  if (guestName) enterCarte(); else show("screen-name");
+}
+
+function showOff(kind) {
+  $("off-title").textContent = kind === "reseau"
+    ? "Impossible de joindre le bar"
+    : "Le bar en ligne n'est pas encore ouvert";
+  $("off-sub").textContent = kind === "reseau"
+    ? "Vérifiez votre connexion (Wi-Fi ou 4G) puis réessayez."
+    : "Commandez directement au bar — on vous sert avec plaisir.";
+  show("screen-off");
+}
+
+/* Recharge la soirée et MES commandes. Renvoie false si la page ne peut pas fonctionner. */
+async function refresh(quiet) {
+  try {
+    const data = await T.rpc("mes_commandes", { p_party: party.id, p_jeton: jeton });
+    T.syncClock(data.soiree.maintenant);
+    const before = new Map(orders.map(o => [o.id, o.statut]));
+    soiree = data.soiree;
+    orders = data.commandes || [];
+    for (const o of orders) {
+      const prev = before.get(o.id);
+      if (prev && prev !== o.statut) statusChanged(o);
+    }
+    $("net").hidden = true;
+    renderCarteState();
+    if (activeScreen() === "screen-suivi") renderSuivi();
+    if (activeScreen() === "screen-mes") renderMes();
+    return true;
+  } catch (e) {
+    if (e.message === "pas_installe") { showOff(); return false; }
+    if (quiet) { $("net").hidden = false; return true; }
+    showOff("reseau");
+    return false;
+  }
+}
+
+/* Les commandes en cours se suivent toutes seules (toutes les 5 s, page visible). */
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  if (!party || !soiree) return;
+  const busy = orders.some(o => o.statut === "en_attente" || o.statut === "en_preparation");
+  pollTimer = setTimeout(async () => {
+    if (!document.hidden) await refresh(true);
+    schedulePoll();
+  }, busy ? 5000 : 20000);
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && soiree) refresh(true).then(schedulePoll);
+});
+
+function statusChanged(order) {
+  if (order.statut === "servie") {
+    buzz([40, 70, 40]);
+    if (trackingId !== order.id) toast(`Votre ${order.cocktail} est servi — santé ! 🥂`);
+  } else if (order.statut === "en_preparation") {
+    buzz(25);
+    if (trackingId !== order.id) toast(`Le barman prépare votre ${order.cocktail} 🍸`);
+  }
+}
+
+/* ---------- Le prénom ---------- */
+function wireUp() {
+  const input = $("input-name");
+  input.value = guestName;
+  $("btn-start").disabled = !T.cleanName(input.value);
+  input.addEventListener("input", () => { $("btn-start").disabled = !T.cleanName(input.value); });
+  input.addEventListener("keydown", e => { if (e.key === "Enter" && T.cleanName(input.value)) saveName(); });
+  $("btn-start").addEventListener("click", saveName);
+  $("btn-not-me").addEventListener("click", () => {
+    nameFromCarte = true;
+    go("screen-name");
+    setTimeout(() => input.focus(), 350);
+  });
+  $("btn-retry").addEventListener("click", () => location.reload());
+
+  $("qty-minus").addEventListener("click", () => setQty(qty - 1));
+  $("qty-plus").addEventListener("click", () => setQty(qty + 1));
+  $("lieu-autre").addEventListener("input", () => {
+    if ($("lieu-autre").value.trim()) $("field-lieu").classList.remove("missing");
+  });
+  $("btn-order").addEventListener("click", submitOrder);
+  $("btn-mine").addEventListener("click", openMine);
+  $("btn-another").addEventListener("click", () => { go("screen-carte"); });
+  $("btn-cancel").addEventListener("click", cancelOrder);
+  $("btn-early-rate").addEventListener("click", () => { earlyRate = true; renderSuivi(); });
+  $("btn-rate").addEventListener("click", submitRating);
+  const comment = $("rate-comment");
+  comment.addEventListener("input", () => {
+    comment.style.height = "auto";
+    comment.style.height = comment.scrollHeight + "px";
+  });
+  buildCriteria();
+}
+
+function saveName() {
+  const name = T.cleanName($("input-name").value);
+  if (!name) return;
+  guestName = name;
+  store.set("name", guestName);
+  if (nameFromCarte) {
+    // Venu de la carte (« ce n'est pas moi ») : on y retourne.
+    nameFromCarte = false;
+    history.back();
+  } else {
+    // Premier passage : la carte remplace l'écran du prénom dans l'historique.
+    history.replaceState({ screen: "screen-carte" }, "");
+  }
+  enterCarte();
+}
+
+/* ---------- La carte ---------- */
+function detailFor(name) {
+  const key = name.toLowerCase();
+  return (soiree.carte || []).find(c => String(c.nom || "").toLowerCase() === key) || null;
+}
+function isOut(name) {
+  const key = name.toLowerCase();
+  return (soiree.ruptures || []).some(r => String(r).toLowerCase() === key);
+}
+
+function buildCarte() {
+  const list = $("carte");
+  list.textContent = "";
+  party.cocktails.forEach((name, index) => {
+    const card = el("button", "drink");
+    card.type = "button";
+    card.style.setProperty("--i", index);
+    card.dataset.name = name;
+    const body = el("span", "d-body");
+    body.append(el("span", "d-name", name));
+    const info = detailFor(name);
+    if (info && info.detail) body.append(el("span", "d-detail", info.detail));
+    const tags = el("span", "d-tags");
+    body.append(tags);
+    card.append(el("span", "d-num", T.numero(index)), body, el("span", "d-go", "+"));
+    card.addEventListener("click", () => openOrder(name));
+    list.append(card);
+  });
+  renderCarteState();
+}
+
+function enterCarte() {
+  $("greet-name").textContent = guestName;
+  $("btn-not-me").textContent = `Vous n'êtes pas ${guestName} ?`;
+  show("screen-carte");
+}
+
+/* Ruptures, bar fermé, bouton « ma commande » : tout ce qui bouge pendant la soirée. */
+function renderCarteState() {
+  if (!soiree) return;
+  const closed = soiree.ouvert === false;
+  $("closed-banner").hidden = !closed;
+  $("closed-message").textContent = soiree.message || "On revient très vite — gardez cette page ouverte.";
+  document.querySelectorAll(".drink").forEach(card => {
+    const out = isOut(card.dataset.name);
+    card.disabled = closed || out;
+    const tags = card.querySelector(".d-tags");
+    tags.textContent = "";
+    const info = detailFor(card.dataset.name);
+    if (info && info.sans_alcool) tags.append(el("span", "tag", "Sans alcool"));
+    if (out) tags.append(el("span", "tag out", "Victime de son succès"));
+    const detail = card.querySelector(".d-detail");
+    if (info && info.detail && !detail) {
+      card.querySelector(".d-name").after(el("span", "d-detail", info.detail));
+    }
+    card.setAttribute("aria-label", `${card.dataset.name}${out ? ", indisponible" : ""}. Commander.`);
+  });
+
+  const live = orders.filter(o => o.statut === "en_attente" || o.statut === "en_preparation");
+  const visible = orders.filter(o => o.statut !== "annulee");
+  $("carte-bar").hidden = visible.length === 0;
+  if (visible.length) {
+    const focus = live[live.length - 1] || visible[0];
+    $("pill-num").textContent = focus.numero;
+    $("pill-title").textContent = live.length > 1
+      ? `${live.length} commandes en cours`
+      : `${focus.cocktail}${focus.quantite > 1 ? " × " + focus.quantite : ""}`;
+    $("pill-sub").textContent = live.length > 1
+      ? "Voir le suivi"
+      : (focus.statut === "servie" && !focus.notee ? "Servie — donnez votre avis ?" : T.STATUTS[focus.statut]);
+  }
+}
+
+function openMine() {
+  const live = orders.filter(o => o.statut === "en_attente" || o.statut === "en_preparation");
+  const visible = orders.filter(o => o.statut !== "annulee");
+  if (live.length === 1 || visible.length === 1) {
+    trackingId = (live[0] || visible[0]).id;
+    earlyRate = false;
+    renderSuivi();
+    go("screen-suivi");
+  } else {
+    renderMes();
+    go("screen-mes");
+  }
+}
+
+/* ---------- Commander ---------- */
+function openOrder(name) {
+  current = name;
+  qty = 1;
+  setQty(1);
+  $("order-name").textContent = name;
+  const info = detailFor(name);
+  $("order-detail").textContent = info && info.detail ? info.detail : "";
+  $("order-note").value = "";
+  $("field-lieu").classList.remove("missing");
+  $("btn-order").textContent = `Commander · ${name}`;
+  $("btn-order").disabled = false;
+  buildLieux();
+  go("screen-order");
+}
+
+function setQty(n) {
+  qty = Math.max(1, Math.min(4, n));
+  $("qty-value").textContent = qty;
+  $("qty-minus").disabled = qty <= 1;
+  $("qty-plus").disabled = qty >= 4;
+}
+
+/* Les lieux proposés par l'hôte (s'il en a donné) + « Autre » ; sinon un champ libre. */
+function buildLieux() {
+  const holder = $("lieux");
+  const input = $("lieu-autre");
+  holder.textContent = "";
+  const lieux = (soiree.lieux || []).filter(Boolean);
+  const last = store.get("lieu", "");
+  if (lieux.length === 0) {
+    holder.hidden = true;
+    input.hidden = false;
+    input.value = last;
+    lieuChoice = "__autre";
+    return;
+  }
+  holder.hidden = false;
+  lieuChoice = lieux.includes(last) ? last : (last ? "__autre" : "");
+  input.value = lieuChoice === "__autre" ? last : "";
+  for (const lieu of [...lieux, "__autre"]) {
+    const chip = el("button", "chip", lieu === "__autre" ? "Ailleurs…" : lieu);
+    chip.type = "button";
+    chip.dataset.lieu = lieu;
+    chip.addEventListener("click", () => {
+      lieuChoice = lieu;
+      paintLieux();
+      $("field-lieu").classList.remove("missing");
+      if (lieu === "__autre") input.focus();
+    });
+    holder.append(chip);
+  }
+  paintLieux();
+}
+function paintLieux() {
+  document.querySelectorAll("#lieux .chip").forEach(c => {
+    c.classList.toggle("on", c.dataset.lieu === lieuChoice);
+    c.setAttribute("aria-pressed", c.dataset.lieu === lieuChoice ? "true" : "false");
+  });
+  const hasList = !$("lieux").hidden;
+  $("lieu-autre").hidden = hasList && lieuChoice !== "__autre";
+}
+function chosenLieu() {
+  return lieuChoice === "__autre" || $("lieux").hidden
+    ? $("lieu-autre").value.trim().replace(/\s+/g, " ")
+    : lieuChoice;
+}
+
+async function submitOrder() {
+  const lieu = chosenLieu();
+  if (!lieu) {
+    const field = $("field-lieu");
+    field.classList.add("missing");
+    field.classList.remove("shake");
+    void field.offsetWidth;
+    field.classList.add("shake");
+    field.scrollIntoView({ behavior: "smooth", block: "center" });
+    toast(message("lieu_manquant"));
+    return;
+  }
+  const button = $("btn-order");
+  const label = button.textContent;
+  button.disabled = true;
+  button.textContent = "";
+  button.append(el("div", "spin"));
+  try {
+    const note = $("order-note").value.trim();
+    const result = await T.rpc("commander", {
+      p_party: party.id, p_jeton: jeton, p_invite: guestName,
+      p_lieu: lieu, p_cocktail: current, p_quantite: qty, p_note: note,
+    });
+    store.set("lieu", lieu);
+    trackingId = result.id;
+    earlyRate = false;
+    if (!(await refresh(true)) || !orders.some(o => o.id === result.id)) {
+      orders.unshift({
+        id: result.id, numero: result.numero, cocktail: current, quantite: qty,
+        lieu, note, statut: "en_attente", created_at: new Date().toISOString(),
+        devant: 0, notee: false,
+      });
+    }
+    buzz(20);
+    renderSuivi();
+    renderCarteState();
+    // Le suivi remplace l'écran de commande : « retour » ramène à la carte.
+    history.replaceState({ screen: "screen-suivi", tracking: trackingId }, "");
+    show("screen-suivi");
+  } catch (e) {
+    toast(message(e.message));
+    if (e.message === "rupture" || e.message === "bar_ferme") {
+      await refresh(true);
+      history.back();
+    }
+  } finally {
+    button.textContent = label;
+    button.disabled = false;
+  }
+}
+
+/* ---------- Le suivi ---------- */
+function renderSuivi() {
+  const o = orders.find(x => x.id === trackingId);
+  if (!o) return;
+  const screen = $("screen-suivi");
+  screen.classList.toggle("s-cancelled", o.statut === "annulee");
+  $("t-num").textContent = o.numero;
+  $("t-what").textContent = `${o.cocktail}${o.quantite > 1 ? " × " + o.quantite : ""}`;
+  $("t-where").textContent = `📍 ${o.lieu} · ${guestName}`;
+  $("t-note").hidden = !o.note;
+  $("t-note").textContent = o.note ? `« ${o.note} »` : "";
+
+  const order = ["en_attente", "en_preparation", "servie"];
+  const reached = order.indexOf(o.statut);
+  document.querySelectorAll("#steps li").forEach((li, i) => {
+    li.classList.toggle("done", reached > i);
+    li.classList.toggle("now", reached === i && o.statut !== "servie");
+    if (o.statut === "servie" && i === 2) li.classList.add("done");
+  });
+  $("steps").hidden = o.statut === "annulee";
+
+  let head = "", info = "";
+  if (o.statut === "en_attente") {
+    head = "Commande reçue !";
+    const devant = o.devant || 0;
+    info = devant === 0
+      ? "Vous êtes le prochain — le barman s'y met."
+      : `${T.plural(devant, "commande", "commandes")} avant la vôtre.`;
+    if (soiree && soiree.attente_min !== null && soiree.attente_min !== undefined) {
+      info += ` Comptez ≈ ${Math.max(1, soiree.attente_min)} min.`;
+    }
+    info += " Gardez cette page ouverte, elle se met à jour toute seule.";
+  } else if (o.statut === "en_preparation") {
+    head = "Le barman s'en occupe 🍸";
+    info = `On vous l'apporte à « ${o.lieu} ».`;
+  } else if (o.statut === "servie") {
+    head = `Santé, ${guestName} ! 🥂`;
+    info = o.notee ? "" : "Votre verre est arrivé ? Dites-nous tout, ça prend 10 secondes.";
+  } else {
+    head = "Commande annulée";
+    info = "Rien ne sera préparé. Envie d'autre chose ?";
+  }
+  $("s-head").textContent = head;
+  $("s-info").textContent = info;
+
+  const canRate = !o.notee && o.statut !== "annulee" && (o.statut === "servie" || earlyRate);
+  $("rate").hidden = !canRate;
+  $("rate-done").hidden = !o.notee;
+  $("btn-cancel").hidden = o.statut !== "en_attente";
+  $("btn-cancel").classList.remove("armed");
+  $("btn-cancel").textContent = "Annuler ma commande";
+  $("btn-early-rate").hidden = !(o.statut === "en_attente" || o.statut === "en_preparation") || earlyRate || o.notee;
+  document.title = o.statut === "servie" && !o.notee
+    ? `🥂 Servie ! — ${party.name || "Tchin"}`
+    : `${party.name || "Tchin"} — Commander`;
+}
+
+let cancelArmed = null;
+async function cancelOrder() {
+  const button = $("btn-cancel");
+  if (!button.classList.contains("armed")) {
+    button.classList.add("armed");
+    button.textContent = "Touchez encore pour confirmer l'annulation";
+    clearTimeout(cancelArmed);
+    cancelArmed = setTimeout(() => {
+      button.classList.remove("armed");
+      button.textContent = "Annuler ma commande";
+    }, 3500);
+    return;
+  }
+  clearTimeout(cancelArmed);
+  button.disabled = true;
+  try {
+    await T.rpc("commande_annuler", { p_id: trackingId, p_jeton: jeton });
+    toast("Commande annulée");
+  } catch (e) {
+    toast(message(e.message));
+  } finally {
+    button.disabled = false;
+    await refresh(true);
+    renderSuivi();
+  }
+}
+
+/* ---------- L'avis ---------- */
+function buildCriteria() {
+  const holder = $("crits");
+  holder.textContent = "";
+  for (const [key, label] of CRITERES) {
+    const row = el("div", "crit");
+    row.dataset.key = key;
+    const name = el("span", "c-label", label);
+    name.append(el("small", "", ""));
+    const stars = el("div", "stars");
+    stars.setAttribute("role", "radiogroup");
+    stars.setAttribute("aria-label", label);
+    for (let n = 1; n <= 5; n++) {
+      const star = el("button", "star");
+      star.type = "button";
+      star.setAttribute("role", "radio");
+      star.setAttribute("aria-label", `${label} : ${n} sur 5`);
+      star.append(el("i"));
+      star.addEventListener("click", () => {
+        ratings[key] = ratings[key] === n ? 0 : n;
+        buzz(6);
+        paintRatings();
+      });
+      stars.append(star);
+    }
+    row.append(name, stars);
+    holder.append(row);
+  }
+}
+function paintRatings() {
+  let any = false;
+  document.querySelectorAll(".crit").forEach(row => {
+    const value = ratings[row.dataset.key] || 0;
+    if (value) any = true;
+    row.querySelectorAll(".star").forEach((star, i) => {
+      star.classList.toggle("on", i < value);
+      star.classList.toggle("cur", i + 1 === value);
+      star.setAttribute("aria-checked", i + 1 === value ? "true" : "false");
+    });
+    row.querySelector("small").textContent = MOTS[value];
+  });
+  $("btn-rate").disabled = !any;
+}
+async function submitRating() {
+  const button = $("btn-rate");
+  button.disabled = true;
+  try {
+    await T.rpc("commande_noter", {
+      p_id: trackingId, p_jeton: jeton,
+      p_cocktail: ratings.cocktail || null, p_rapidite: ratings.rapidite || null,
+      p_service: ratings.service || null, p_experience: ratings.experience || null,
+      p_commentaire: $("rate-comment").value.trim(),
+    });
+    ratings = {};
+    $("rate-comment").value = "";
+    paintRatings();
+    earlyRate = false;
+    buzz([20, 40, 20]);
+    await refresh(true);
+    const o = orders.find(x => x.id === trackingId);
+    if (o) { o.notee = true; o.statut = "servie"; }
+    renderSuivi();
+    renderCarteState();
+  } catch (e) {
+    toast(message(e.message));
+    button.disabled = false;
+  }
+}
+
+/* ---------- Mes commandes ---------- */
+function renderMes() {
+  const list = $("mes-list");
+  list.textContent = "";
+  for (const o of orders) {
+    const row = el("button", "mine");
+    row.type = "button";
+    const body = el("span", "m-body");
+    body.append(
+      el("b", "", `${o.cocktail}${o.quantite > 1 ? " × " + o.quantite : ""}`),
+      el("span", "", `${o.lieu} · ${T.since(o.created_at)}`)
+    );
+    row.append(el("span", "m-num", String(o.numero)), body,
+      el("span", `status ${o.statut}`, o.statut === "servie" && !o.notee ? "Servie ★" : T.STATUTS[o.statut]));
+    row.addEventListener("click", () => {
+      trackingId = o.id;
+      earlyRate = false;
+      renderSuivi();
+      go("screen-suivi");
+    });
+    list.append(row);
+  }
+}
+</script>
+</body>
+</html>

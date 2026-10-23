@@ -9,18 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
-<script>
-/* ============================================================
-   CONFIGURATION — la même qu'avant : URL du projet Supabase et
-   clé « anon » (faite pour être publiée, la RLS fait le reste).
-   Sans configuration, le site fonctionne quand même : l'invité
-   envoie ses avis par message au lieu de la base.
-   ============================================================ */
-const TCHIN_CONFIG = {
-  SUPABASE_URL: "https://mhpliinqivsdxnkdkopw.supabase.co",
-  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ocGxpaW5xaXZzZHhua2Rrb3B3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgwMTM1ODIsImV4cCI6MjEwMzU4OTU4Mn0.yk7wrJAZ5tN_8G_l3sznQgsCxMEAj0exmCNtZqEVgpQ",
-};
-</script>
+<!-- La configuration Supabase, partagée par toutes les pages du site. -->
+<script src="config.js?v=2"></script>
 <style>
   :root {
     --bg: #0B0A09;            /* charbon chaud — le fond Signature de l'app */
