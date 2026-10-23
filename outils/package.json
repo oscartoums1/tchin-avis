@@ -1,0 +1,13 @@
+{
+  "name": "tchin-avis-outils",
+  "private": true,
+  "description": "Réplique locale de Supabase (vrai PostgreSQL via PGlite) pour tester les scripts SQL et le site.",
+  "type": "module",
+  "scripts": {
+    "base": "node supabase_local.mjs ../setup.sql ../commandes.sql 8799",
+    "test": "node test_api.mjs http://127.0.0.1:8799"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.3.16"
+  }
+}

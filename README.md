@@ -74,3 +74,20 @@ dans l'app pour vérifier.
 - Test local : servir le dossier (`python3 -m http.server`) et poser une
   config de test :
   `localStorage.setItem('tchin:config', JSON.stringify({SUPABASE_URL:"…", SUPABASE_ANON_KEY:"…"}))`.
+
+## Tester le SQL sans toucher à la production
+
+`outils/` contient une réplique locale de Supabase sur un **vrai
+PostgreSQL** (PGlite) : mêmes rôles `anon`, mêmes droits par défaut, mêmes
+réponses d'erreur que l'API. Elle exécute `setup.sql` puis `commandes.sql`
+deux fois (ré-exécutabilité), et `test_api.mjs` rejoue 53 vérifications
+(commandes, file, ruptures, pause, annulation, avis, sécurité).
+
+```
+cd outils && npm install
+npm run base      # terminal 1 : la base locale sur http://127.0.0.1:8799
+npm test          # terminal 2
+```
+
+Pour brancher le site dessus : servir le dossier et poser
+`tchin:config` = `{"SUPABASE_URL": "http://127.0.0.1:8799", "SUPABASE_ANON_KEY": "local"}`.
