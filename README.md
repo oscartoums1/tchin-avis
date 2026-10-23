@@ -27,6 +27,10 @@ Payload : base64url de `1|<partyId>|<nom>|<aaaa-mm-jj>|<cocktail1>~<cocktail2>�
    avancer en un tap, voit le bilan (verres servis, attente moyenne, avis,
    commentaires), met le bar en pause avec un message, déclare des
    ruptures, et peut partager le lien `bar.html` à qui l'aide au bar.
+   Il peut aussi **retirer un avis** (la commande reste servie, l'invité
+   peut renoter) ou **supprimer une commande** (essai, doublon) — dans
+   l'app (menu « … » d'une commande servie, croix sur chaque avis du
+   bilan) comme sur `bar.html`.
 
 La page et l'app se resynchronisent toutes les 3 à 5 secondes (pas de
 WebSocket : robuste sur un réseau de salle des fêtes).
@@ -80,8 +84,8 @@ dans l'app pour vérifier.
 `outils/` contient une réplique locale de Supabase sur un **vrai
 PostgreSQL** (PGlite) : mêmes rôles `anon`, mêmes droits par défaut, mêmes
 réponses d'erreur que l'API. Elle exécute `setup.sql` puis `commandes.sql`
-deux fois (ré-exécutabilité), et `test_api.mjs` rejoue 53 vérifications
-(commandes, file, ruptures, pause, annulation, avis, sécurité).
+deux fois (ré-exécutabilité), et `test_api.mjs` rejoue 65 vérifications
+(commandes, file, ruptures, pause, annulation, avis, suppressions, sécurité).
 
 ```
 cd outils && npm install

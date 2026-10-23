@@ -952,7 +952,16 @@ async function submitOrder() {
 /* ---------- Le suivi ---------- */
 function renderSuivi() {
   const o = orders.find(x => x.id === trackingId);
-  if (!o) return;
+  if (!o) {
+    // L'hôte a supprimé cette commande (un essai, un doublon).
+    if (trackingId && activeScreen() === "screen-suivi") {
+      trackingId = null;
+      toast("Cette commande a été retirée par l'organisateur.");
+      history.replaceState({ screen: "screen-carte" }, "");
+      show("screen-carte");
+    }
+    return;
+  }
   const screen = $("screen-suivi");
   screen.classList.toggle("s-cancelled", o.statut === "annulee");
   $("t-num").textContent = o.numero;

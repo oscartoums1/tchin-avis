@@ -114,6 +114,32 @@ check("o2 servie après avis", r.json.commandes[1].statut === "servie" && r.json
 r = await rpc("mes_commandes", { p_party: P, p_jeton: T1 });
 check("Léa : notee=true côté invité", r.json.commandes.find(c => c.id === o1).notee === true, r.json.commandes);
 
+console.log("Retirer un avis, supprimer une commande");
+await expectError("retirer l'avis avec une mauvaise clé", "commande_effacer_avis", { p_party: P, p_cle: "v".repeat(20), p_id: o1 }, "cle_refusee");
+r = await rpc("commande_effacer_avis", { p_party: P, p_cle: KEY, p_id: o1 });
+check("l'hôte retire l'avis de Léa", r.status === 200 && r.json.ok === true, r);
+r = await rpc("bar_commandes", { p_party: P, p_cle: KEY });
+const sansAvis = r.json.commandes.find(c => c.id === o1);
+check("avis effacé, commande toujours servie", sansAvis.note_cocktail === null && sansAvis.note_experience === null && sansAvis.commentaire === "" && sansAvis.notee_at === null && sansAvis.statut === "servie", sansAvis);
+r = await rpc("mes_commandes", { p_party: P, p_jeton: T1 });
+check("Léa peut noter à nouveau", r.json.commandes.find(c => c.id === o1).notee === false, r.json.commandes);
+r = await rpc("commande_noter", { p_id: o1, p_jeton: T1, p_cocktail: 5, p_rapidite: 4, p_service: 5, p_experience: 5, p_commentaire: "Parfait !" });
+check("nouvel avis accepté", r.status === 200, r);
+
+const P2 = "f0e1d2c3b4a5968778695a4b3c2d1e0f";
+const KEY2 = "cle-autre-soiree-" + "e".repeat(30);
+await rpc("soiree_enregistrer", { p_party: P2, p_cle: KEY2, p_nom: "Autre soirée" });
+await expectError("une autre soirée ne supprime pas cette commande", "commande_supprimer", { p_party: P2, p_cle: KEY2, p_id: o3 }, "commande_introuvable");
+await expectError("une autre soirée ne retire pas cet avis", "commande_effacer_avis", { p_party: P2, p_cle: KEY2, p_id: o1 }, "commande_introuvable");
+await expectError("supprimer avec une mauvaise clé", "commande_supprimer", { p_party: P, p_cle: "u".repeat(20), p_id: o3 }, "cle_refusee");
+r = await rpc("commande_supprimer", { p_party: P, p_cle: KEY, p_id: o3 });
+check("l'hôte supprime la commande annulée", r.status === 200, r);
+r = await rpc("bar_commandes", { p_party: P, p_cle: KEY });
+check("elle disparaît du bar", r.json.commandes.length === 2 && !r.json.commandes.some(c => c.id === o3), r.json.commandes.map(c => c.numero));
+r = await rpc("mes_commandes", { p_party: P, p_jeton: T1 });
+check("et du téléphone de l'invité", !r.json.commandes.some(c => c.id === o3), r.json.commandes.map(c => c.numero));
+await expectError("supprimer deux fois", "commande_supprimer", { p_party: P, p_cle: KEY, p_id: o3 }, "commande_introuvable");
+
 console.log("Retour en arrière & garde-fou");
 r = await rpc("commande_statut", { p_party: P, p_cle: KEY, p_id: o1, p_statut: "en_attente" });
 r = await rpc("bar_commandes", { p_party: P, p_cle: KEY });
@@ -138,7 +164,7 @@ for (const table of ["commandes", "soirees"]) {
 console.log("Réinitialisation");
 await expectError("reset mauvaise clé", "bar_reinitialiser", { p_party: P, p_cle: "q".repeat(20) }, "cle_refusee");
 r = await rpc("bar_reinitialiser", { p_party: P, p_cle: KEY });
-check("reset efface les commandes", r.status === 200 && r.json.effacees === 8, r);
+check("reset efface les commandes", r.status === 200 && r.json.effacees === 7, r);
 r = await rpc("commander", { p_party: P, p_jeton: T1, p_invite: "Léa", p_lieu: "Table 1", p_cocktail: "Mojito" });
 check("la numérotation repart à 1", r.json.numero === 1, r.json);
 await rpc("bar_reinitialiser", { p_party: P, p_cle: KEY });

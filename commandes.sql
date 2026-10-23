@@ -383,6 +383,45 @@ begin
 end
 $$;
 
+-- Retirer l'avis d'une commande (un essai, un avis déplacé) : la commande
+-- reste servie, l'invité pourra noter à nouveau.
+create or replace function public.commande_effacer_avis(
+  p_party text, p_cle text, p_id uuid
+) returns jsonb
+language plpgsql security definer
+set search_path = public
+as $$
+begin
+  perform public.tchin_verifier_cle(p_party, p_cle);
+  update public.commandes set
+    note_cocktail = null,
+    note_rapidite = null,
+    note_service = null,
+    note_experience = null,
+    commentaire = '',
+    notee_at = null
+  where id = p_id and party_id = p_party;
+  if not found then raise exception 'commande_introuvable'; end if;
+  return jsonb_build_object('ok', true);
+end
+$$;
+
+-- Supprimer une commande pour de bon (un essai, un doublon) : elle disparaît
+-- du bar, du bilan et du téléphone de l'invité.
+create or replace function public.commande_supprimer(
+  p_party text, p_cle text, p_id uuid
+) returns jsonb
+language plpgsql security definer
+set search_path = public
+as $$
+begin
+  perform public.tchin_verifier_cle(p_party, p_cle);
+  delete from public.commandes where id = p_id and party_id = p_party;
+  if not found then raise exception 'commande_introuvable'; end if;
+  return jsonb_build_object('ok', true);
+end
+$$;
+
 -- Repartir de zéro (après les essais) : efface les commandes de la soirée.
 create or replace function public.bar_reinitialiser(p_party text, p_cle text) returns jsonb
 language plpgsql security definer
@@ -409,6 +448,8 @@ grant execute on function public.commande_annuler(uuid, text) to anon, authentic
 grant execute on function public.commande_noter(uuid, text, integer, integer, integer, integer, text) to anon, authenticated;
 grant execute on function public.bar_commandes(text, text) to anon, authenticated;
 grant execute on function public.commande_statut(text, text, uuid, text) to anon, authenticated;
+grant execute on function public.commande_effacer_avis(text, text, uuid) to anon, authenticated;
+grant execute on function public.commande_supprimer(text, text, uuid) to anon, authenticated;
 grant execute on function public.bar_reinitialiser(text, text) to anon, authenticated;
 
 -- L'API voit tout de suite les nouvelles fonctions.
@@ -454,6 +495,14 @@ begin
   exception when others then
     if sqlerrm <> 'cle_refusee' then raise; end if;
   end;
+
+  perform public.commande_effacer_avis(v_party, v_cle, v_id);
+  v := public.bar_commandes(v_party, v_cle);
+  if v -> 'commandes' -> 0 ->> 'note_cocktail' is not null then raise exception 'autotest : avis retiré'; end if;
+
+  perform public.commande_supprimer(v_party, v_cle, v_id);
+  v := public.bar_commandes(v_party, v_cle);
+  if jsonb_array_length(v -> 'commandes') <> 0 then raise exception 'autotest : commande supprimée'; end if;
 
   delete from public.commandes where party_id = v_party;
   delete from public.soirees where party_id = v_party;

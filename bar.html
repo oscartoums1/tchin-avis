@@ -138,7 +138,7 @@
   .o-what { font-family: var(--serif); font-weight: 700; font-size: 24px; margin-top: 8px; line-height: 1.1; }
   .o-what .q { color: var(--gold-light); }
   .o-note { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--copper); margin-top: 4px; }
-  .o-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .o-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
   .act {
     flex: 1; border-radius: 999px; cursor: pointer; font-size: 15px; font-weight: 700; padding: 13px 12px; min-height: 48px;
     border: none; background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: var(--on-gold);
@@ -357,6 +357,8 @@ async function load() {
     const incoming = data.commandes || [];
     // Les actions pas encore confirmées gardent leur statut local (pas de clignotement).
     const now = Date.now();
+    for (const [id, until] of removed) if (until < now) removed.delete(id);
+    for (let i = incoming.length - 1; i >= 0; i--) if (removed.has(incoming[i].id)) incoming.splice(i, 1);
     for (const o of incoming) {
       const wanted = pending.get(o.id);
       if (!wanted) continue;
@@ -464,6 +466,8 @@ function card(o) {
     actions.append(button("act-2", "↩︎", () => move(o, "en_attente"), "Remettre en attente"));
   } else if (o.statut === "servie") {
     actions.append(button("act-2", "↩︎ Pas encore servie", () => move(o, "en_preparation")));
+    if (o.notee_at) actions.append(armed("Retirer l'avis", "Confirmer ?", () => removeRating(o)));
+    actions.append(armed("Supprimer", "Confirmer ?", () => removeOrder(o)));
   }
   node.append(actions);
   node.addEventListener("pointerdown", () => fresh.delete(o.id), { once: true });
@@ -508,6 +512,43 @@ async function move(order, statut) {
     render();
     toast(e.message === "reseau" ? "Pas de réseau — réessayez." : "La mise à jour n'est pas passée.");
   }
+}
+
+/* Retirer un avis (essai, avis déplacé) ou supprimer une commande pour de bon. */
+const removed = new Map(); // id → jusqu'à quand masquer (une resynchro en vol ne la fait pas revenir)
+async function removeRating(order) {
+  const before = { ...order };
+  Object.assign(order, { note_cocktail: null, note_rapidite: null, note_service: null,
+    note_experience: null, commentaire: "", notee_at: null });
+  render();
+  try {
+    await T.rpc("commande_effacer_avis", { p_party: party.id, p_cle: party.key, p_id: order.id });
+    toast("Avis retiré");
+  } catch (e) {
+    Object.assign(order, before);
+    render();
+    toast(removalError(e));
+  }
+}
+async function removeOrder(order) {
+  const index = orders.indexOf(order);
+  orders = orders.filter(o => o.id !== order.id);
+  removed.set(order.id, Date.now() + 8000);
+  render();
+  try {
+    await T.rpc("commande_supprimer", { p_party: party.id, p_cle: party.key, p_id: order.id });
+    toast(`Commande n° ${order.numero} supprimée`);
+  } catch (e) {
+    removed.delete(order.id);
+    orders.splice(Math.max(0, index), 0, order);
+    render();
+    toast(removalError(e));
+  }
+}
+function removalError(e) {
+  if (e.message === "pas_installe") return "La base doit être mise à jour (commandes.sql) par l'organisateur.";
+  if (e.message === "reseau") return "Pas de réseau — réessayez.";
+  return "Ça n'est pas passé — réessayez.";
 }
 
 async function toggleOpen() {
