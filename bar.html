@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
 <script src="config.js?v=2"></script>
-<script src="commun.js?v=2"></script>
+<script src="commun.js?v=4"></script>
 <style>
   :root {
     --bg: #0B0A09;
@@ -156,6 +156,75 @@
   .o-rating b { color: var(--gold-light); }
   .o-comment { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--cream); margin-top: 6px; }
 
+  /* ---------- À préparer (toutes les commandes en cours, par cocktail) ---------- */
+  .prep { margin-top: 16px; }
+  .prep-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 2px 8px; }
+  .prep-head b { font-size: 11px; letter-spacing: 3px; color: var(--label); }
+  .prep-head span { font-size: 12px; color: var(--cream-3); }
+  .chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: none; display: inline-flex; align-items: baseline; gap: 7px; cursor: pointer; white-space: nowrap;
+    border-radius: 999px; padding: 10px 15px; min-height: 44px; font-size: 15px; font-weight: 700;
+    background: rgba(216, 169, 78, 0.10); border: 1px solid rgba(216, 169, 78, 0.38);
+  }
+  .chip b { font-family: var(--serif); font-size: 19px; color: var(--gold-light); font-variant-numeric: lining-nums tabular-nums; }
+  .chip:active { transform: scale(0.97); }
+
+  /* ---------- La recette (fenêtre) ---------- */
+  #recipe {
+    margin: auto auto 0; width: 100%; max-width: 560px; max-height: 92dvh; padding: 0;
+    overflow-y: auto; overscroll-behavior: contain;
+    border: 1px solid rgba(216, 169, 78, 0.35); border-bottom: none; border-radius: 26px 26px 0 0;
+    background: linear-gradient(180deg, #1A150F, var(--bg) 220px); color: var(--cream);
+    box-shadow: 0 -18px 60px rgba(0, 0, 0, 0.7);
+  }
+  #recipe:focus { outline: none; }
+  #recipe[open] { animation: rise 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+  #recipe::backdrop { background: rgba(5, 4, 3, 0.66); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+  @keyframes rise { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (min-width: 700px) {
+    #recipe { margin: auto; border-bottom: 1px solid rgba(216, 169, 78, 0.35); border-radius: 26px; max-height: 88dvh; }
+  }
+  body:has(#recipe[open]) { overflow: hidden; }
+  .r-sheet { padding: 20px 18px calc(22px + env(safe-area-inset-bottom)); }
+  .r-head { display: flex; align-items: flex-start; gap: 12px; }
+  .r-head .titles { flex: 1; min-width: 0; }
+  .r-head h2 { font-family: var(--serif); font-weight: 700; font-size: 32px; line-height: 1.05; margin-top: 4px; overflow-wrap: anywhere; }
+  .r-meta { font-size: 13px; color: var(--cream-2); margin-top: 5px; line-height: 1.4; }
+  .r-count {
+    display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 14px; border-radius: 18px;
+    background: rgba(216, 169, 78, 0.08); border: 1px solid rgba(216, 169, 78, 0.38);
+  }
+  .r-count .c-text { flex: 1; min-width: 0; }
+  .r-count .c-text span { display: block; font-size: 10px; font-weight: 700; letter-spacing: 3px; color: var(--label); }
+  .r-count .c-text b { display: block; font-size: 24px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .r-step { display: flex; gap: 8px; }
+  .r-step button {
+    width: 48px; height: 48px; border-radius: 50%; cursor: pointer; font-size: 22px; font-weight: 700; line-height: 1;
+    background: var(--glass); border: 1px solid var(--stroke); color: var(--gold);
+  }
+  .r-step button:disabled { color: var(--cream-3); opacity: 0.5; }
+  .r-sec { display: flex; align-items: center; gap: 12px; margin: 20px 0 6px; }
+  .r-sec b { font-size: 11px; letter-spacing: 3px; color: var(--label); white-space: nowrap; }
+  .r-sec i { flex: 1; height: 1px; background: var(--hairline); }
+  .r-sec span { font-size: 12px; color: var(--cream-2); white-space: nowrap; }
+  .r-doses { list-style: none; }
+  .r-doses li { display: flex; align-items: baseline; gap: 12px; padding: 11px 2px; border-bottom: 1px solid var(--hairline); }
+  .r-doses li:last-child { border-bottom: none; }
+  .r-doses .i-name { flex: 1; min-width: 0; font-size: 16px; font-weight: 600; }
+  .r-doses .i-amount { text-align: right; font-size: 18px; font-weight: 800; color: var(--gold-light); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .r-doses .i-amount.free { color: var(--copper); font-weight: 600; font-size: 15px; white-space: normal; max-width: 55%; }
+  .r-doses .i-amount small { display: block; font-size: 11.5px; font-weight: 500; color: var(--cream-3); margin-top: 1px; }
+  .r-note { font-size: 12px; color: var(--cream-3); line-height: 1.5; margin-top: 8px; }
+  .r-steps { list-style: none; counter-reset: step; }
+  .r-steps li { counter-increment: step; display: flex; gap: 12px; padding: 7px 0; font-size: 15.5px; line-height: 1.45; }
+  .r-steps li::before {
+    content: counter(step, decimal-leading-zero); flex: none; font-family: var(--serif); font-weight: 700;
+    font-size: 17px; color: var(--gold); font-variant-numeric: lining-nums; line-height: 1.3;
+  }
+  .r-missing { margin-top: 18px; font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.45; color: var(--cream-2); }
+
   /* ---------- Ruptures ---------- */
   .section-title { display: flex; align-items: center; gap: 12px; margin: 28px 0 12px; }
   .section-title b { font-size: 11px; letter-spacing: 3px; color: var(--label); white-space: nowrap; }
@@ -185,7 +254,7 @@
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
   @media (prefers-reduced-motion: reduce) {
-    .live i, .order.fresh { animation: none; }
+    .live i, .order.fresh, #recipe[open] { animation: none; }
     #toast, .switch, .switch::after { transition: none; }
   }
 </style>
@@ -209,7 +278,7 @@
   <div id="v-bar" hidden>
     <div class="top">
       <div class="titles">
-        <div class="eyebrow">TCHIN · LE BAR</div>
+        <div class="eyebrow" id="bar-eyebrow">TCHIN · LE BAR</div>
         <h1 id="party-name"></h1>
         <div class="live" id="live"><i></i><span id="live-text">En direct</span></div>
       </div>
@@ -225,6 +294,11 @@
     </div>
     <input class="pause-msg" id="pause-msg" maxlength="200" hidden
            placeholder="Message aux invités (ex. « Pause gâteau, on revient dans 15 min »)">
+
+    <div class="prep" id="prep" hidden>
+      <div class="prep-head"><b>À PRÉPARER</b><span>Touchez pour la recette en doses</span></div>
+      <div class="chips" id="chips"></div>
+    </div>
 
     <div class="tabs" role="tablist">
       <button class="tab on" data-tab="en_attente" role="tab">En attente <span class="n" id="n-en_attente">0</span></button>
@@ -252,6 +326,36 @@
   </div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="recipe" aria-labelledby="r-name" tabindex="-1">
+  <div class="r-sheet">
+    <div class="r-head">
+      <div class="titles">
+        <div class="eyebrow">LA RECETTE</div>
+        <h2 id="r-name"></h2>
+        <p class="r-meta" id="r-meta"></p>
+      </div>
+      <button class="icon-btn" id="r-close" type="button" aria-label="Fermer la recette">✕</button>
+    </div>
+    <div id="r-body">
+      <div class="r-count">
+        <div class="c-text"><span>À PRÉPARER</span><b id="r-glasses"></b></div>
+        <div class="r-step">
+          <button type="button" id="r-minus" aria-label="Un verre de moins">−</button>
+          <button type="button" id="r-plus" aria-label="Un verre de plus">+</button>
+        </div>
+      </div>
+      <div class="r-sec"><b>LES DOSES</b><i></i><span id="r-for"></span></div>
+      <ul class="r-doses" id="r-doses"></ul>
+      <p class="r-note">1 dose = 1 mesure de votre gobelet doseur. Gardez le même gobelet pour tout le cocktail : les proportions restent justes, quelle que soit sa taille.</p>
+      <div id="r-steps-block">
+        <div class="r-sec"><b>PRÉPARATION</b><i></i></div>
+        <ol class="r-steps" id="r-steps"></ol>
+      </div>
+    </div>
+    <p class="r-missing" id="r-missing" hidden>La recette de ce cocktail n'a pas encore été envoyée. L'organisateur doit ouvrir une fois l'aperçu du menu ou le bar en direct dans l'app Tchin : elle apparaîtra ici toute seule.</p>
+  </div>
+</dialog>
 
 <script>
 "use strict";
@@ -294,6 +398,7 @@ async function boot() {
   if (!party || !party.key) { $("v-error").hidden = false; return; }
   document.title = `Le bar — ${party.name || "Tchin"}`;
   $("party-name").textContent = party.name || "La soirée";
+  if (party.signature) $("bar-eyebrow").textContent = T.barTitle(party.signature).toUpperCase();
   if (!T.hasBackend()) { off("Base non configurée", "Le site n'est pas relié à sa base de commandes."); return; }
   wire();
   await load();
@@ -321,6 +426,11 @@ function wire() {
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) { load(); schedule(); }
   });
+  $("r-close").addEventListener("click", () => $("recipe").close());
+  // Un appui hors de la fenêtre la ferme (le fond appartient au <dialog> lui-même).
+  $("recipe").addEventListener("click", e => { if (e.target === $("recipe")) $("recipe").close(); });
+  $("r-minus").addEventListener("click", () => stepGlasses(-1));
+  $("r-plus").addEventListener("click", () => stepGlasses(1));
 }
 
 /* Deux notes cristallines, façon verres qui trinquent. */
@@ -423,7 +533,93 @@ function render() {
     }
     for (const o of list) holder.append(card(o));
   }
+  renderPrep();
   renderStock();
+}
+
+/* « À préparer » : tout ce qui est en attente ou en préparation, regroupé par
+   cocktail — un appui ouvre la recette pour le total, idéal pour lancer une série.
+   Le plus demandé d'abord ; à égalité, le premier commandé (comme dans l'app). */
+function renderPrep() {
+  const totals = new Map();
+  for (const o of orders) {
+    if (o.statut !== "en_attente" && o.statut !== "en_preparation") continue;
+    const entry = totals.get(o.cocktail) || { name: o.cocktail, count: 0 };
+    entry.count += o.quantite || 1;
+    totals.set(o.cocktail, entry);
+  }
+  const entries = [...totals.values()].sort((a, b) => b.count - a.count);
+  $("prep").hidden = entries.length === 0;
+  const holder = $("chips");
+  const scroll = holder.scrollLeft;
+  holder.textContent = "";
+  for (const { name, count } of entries) {
+    const chip = button("chip", name, () => openRecipe(name, count), `${name}, ${count} à préparer — voir la recette`);
+    chip.append(el("b", "", `× ${count}`));
+    holder.append(chip);
+  }
+  holder.scrollLeft = scroll;
+}
+
+/* ---------- La recette en doses ---------- */
+const MAX_GLASSES = 40;
+let recipeState = null; // { recette, glasses }
+
+function recipeFor(name) {
+  const key = String(name || "").toLowerCase();
+  const item = (soiree && soiree.carte || []).find(c => String(c.nom || "").toLowerCase() === key);
+  const recette = item && item.recette;
+  return recette && Array.isArray(recette.ingredients) && recette.ingredients.length ? recette : null;
+}
+
+function openRecipe(name, glasses) {
+  const recette = recipeFor(name);
+  $("r-name").textContent = name;
+  const garnish = recette ? String(recette.garniture || "").trim() : "";
+  $("r-meta").textContent = recette ? [recette.verre, garnish].filter(Boolean).join(" · ") : "";
+  $("r-body").hidden = !recette;
+  $("r-missing").hidden = Boolean(recette);
+  recipeState = recette ? { recette, glasses: Math.min(Math.max(1, glasses || 1), MAX_GLASSES) } : null;
+  if (recette) {
+    const steps = $("r-steps");
+    steps.textContent = "";
+    for (const step of recette.etapes || []) steps.append(el("li", "", step));
+    $("r-steps-block").hidden = !(recette.etapes || []).length;
+    renderDoses();
+  }
+  const dialog = $("recipe");
+  if (!dialog.open) dialog.showModal();
+  dialog.scrollTop = 0;
+  dialog.focus(); // pas d'anneau de focus sur ✕ à l'ouverture ; Tab y mène
+}
+
+function stepGlasses(delta) {
+  if (!recipeState) return;
+  const next = Math.min(Math.max(1, recipeState.glasses + delta), MAX_GLASSES);
+  if (next === recipeState.glasses) return;
+  recipeState.glasses = next;
+  if (navigator.vibrate) navigator.vibrate(8);
+  renderDoses();
+}
+
+function renderDoses() {
+  const { recette, glasses } = recipeState;
+  $("r-glasses").textContent = T.plural(glasses, "verre", "verres");
+  $("r-for").textContent = glasses > 1 ? `pour ${glasses} verres` : "pour 1 verre";
+  $("r-minus").disabled = glasses <= 1;
+  $("r-plus").disabled = glasses >= MAX_GLASSES;
+  const list = $("r-doses");
+  list.textContent = "";
+  for (const line of recette.ingredients) {
+    const li = el("li");
+    li.append(el("span", "i-name", line.nom));
+    const isDose = typeof line.dose === "number";
+    const amount = el("span", isDose ? "i-amount" : "i-amount free", T.amount(line, glasses));
+    if (isDose && glasses > 1) amount.append(el("small", "", `${T.doseText(line.dose)} par verre`));
+    else if (!isDose && glasses > 1 && T.perGlassOnly(line.texte)) amount.append(el("small", "", "par verre"));
+    li.append(amount);
+    list.append(li);
+  }
 }
 
 function card(o) {
@@ -458,11 +654,15 @@ function card(o) {
   }
 
   const actions = el("div", "o-actions");
+  const recipeButton = () => button("act-2", "Recette", () => openRecipe(o.cocktail, o.quantite),
+    `Recette de ${o.cocktail}${o.quantite > 1 ? ` pour ${o.quantite} verres` : ""}`);
   if (o.statut === "en_attente") {
     actions.append(button("act", "Je prépare →", () => move(o, "en_preparation")));
+    actions.append(recipeButton());
     actions.append(armed("Annuler", "Confirmer ?", () => move(o, "annulee")));
   } else if (o.statut === "en_preparation") {
     actions.append(button("act serve", "Servi ✓", () => move(o, "servie")));
+    actions.append(recipeButton());
     actions.append(button("act-2", "↩︎", () => move(o, "en_attente"), "Remettre en attente"));
   } else if (o.statut === "servie") {
     actions.append(button("act-2", "↩︎ Pas encore servie", () => move(o, "en_preparation")));

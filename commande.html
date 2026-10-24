@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
 <script src="config.js?v=2"></script>
-<script src="commun.js?v=2"></script>
+<script src="commun.js?v=4"></script>
 <style>
   :root {
     --bg: #0B0A09;
@@ -374,6 +374,11 @@
   }
 
   .brand { text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; color: rgba(201, 162, 39, 0.85); margin-top: 22px; }
+  /* Signée par l'hôte : un colophon plutôt qu'une marque. */
+  .brand.signed { margin-top: 30px; font-weight: 400; letter-spacing: 0; color: var(--cream-2); }
+  .brand.signed .lead { display: block; font-family: var(--serif); font-style: italic; font-size: 15px; line-height: 1.35; text-wrap: balance; }
+  .brand.signed .host { display: block; font-family: var(--serif); font-weight: 700; font-size: 24px; color: var(--gold-light); margin-top: 2px; }
+  .brand.signed .with { display: block; font-size: 9px; font-weight: 700; letter-spacing: 3px; text-indent: 3px; color: var(--label); opacity: 0.75; margin-top: 8px; }
 
   @media (prefers-reduced-motion: reduce) {
     .screen.active, .drink, #bulles i, .steps li.now::before, .shake { animation: none; }
@@ -395,7 +400,7 @@
 
 <div id="colonne">
   <header id="header" hidden>
-    <div class="eyebrow">TCHIN</div>
+    <div class="eyebrow" id="header-eyebrow">TCHIN</div>
     <h1 class="party" id="party-name"></h1>
     <div class="date" id="party-date"></div>
     <div class="filet"></div>
@@ -530,7 +535,7 @@
     <div id="mes-list"></div>
   </section>
 
-  <div class="brand">Fait maison avec Tchin 🥂</div>
+  <div class="brand" id="brand">Fait maison avec Tchin 🥂</div>
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -611,12 +616,22 @@ function buzz(pattern) {
 /* ---------- Démarrage ---------- */
 boot();
 
+/* La carte signée par l'hôte : « Le bar d'Oscar » en tête, le crédit en pied. */
+function sign(host) {
+  $("header-eyebrow").textContent = T.barTitle(host).toUpperCase();
+  const brand = $("brand");
+  brand.textContent = "";
+  brand.classList.add("signed");
+  brand.append(el("span", "lead", T.CREDIT_LEAD), el("span", "host", host), el("span", "with", "AVEC TCHIN"));
+}
+
 async function boot() {
   if (!party) { show("screen-error"); return; }
   $("header").hidden = false;
   $("party-name").textContent = party.name || "La soirée";
   $("party-date").textContent = T.frenchDate(party.date);
   document.title = `${party.name || "Tchin"} — Commander`;
+  if (party.signature) sign(party.signature);
 
   if (!T.hasBackend()) { showOff(); return; }
   jeton = store.get("jeton", "");

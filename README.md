@@ -11,7 +11,10 @@ imprimer un menu).
 | `bar.html` | `#b=<payload>.<clé>` | L'équipe gère les commandes (lien secret partagé depuis l'app) |
 | `index.html` | `#m=` / `#r=` | Avis par cocktail — l'ancien système, gardé pour les menus déjà imprimés |
 
-Payload : base64url de `1|<partyId>|<nom>|<aaaa-mm-jj>|<cocktail1>~<cocktail2>…`.
+Payload : base64url de `1|<partyId>|<nom>|<aaaa-mm-jj>|<cocktail1>~<cocktail2>…[|<signature>]`.
+La signature (prénom de l'hôte, facultative) ferme la marche : les pages
+affichent alors « Le bar d'Oscar » en tête et « Cocktails, carte et service
+de commande imaginés par Oscar » en pied. Les liens à 5 champs restent valides.
 
 ## Le bar en direct (commandes)
 
@@ -31,6 +34,16 @@ Payload : base64url de `1|<partyId>|<nom>|<aaaa-mm-jj>|<cocktail1>~<cocktail2>�
    peut renoter) ou **supprimer une commande** (essai, doublon) — dans
    l'app (menu « … » d'une commande servie, croix sur chaque avis du
    bilan) comme sur `bar.html`.
+3. **Le barman** voit pour chaque commande la **recette en doses de gobelet
+   doseur**, déjà multipliée par le nombre de verres (bouton « Recette »),
+   et en tête de liste « À préparer » : les cocktails en cours regroupés
+   (« Mojito × 5 ») — un appui ouvre la recette pour toute la série, avec
+   +/− pour ajuster. Les recettes voyagent dans la carte de la soirée
+   (`soirees.carte[].recette` : `verre`, `garniture`, `ingredients[]`
+   `{nom, dose?, texte}`, `etapes[]` ; `dose` absente = quantité libre) que
+   l'app publie dès qu'on ouvre l'aperçu du menu ou le bar en direct. Une
+   soirée publiée avant cette version affiche « recette pas encore envoyée »
+   jusqu'à la prochaine ouverture dans l'app.
 
 La page et l'app se resynchronisent toutes les 3 à 5 secondes (pas de
 WebSocket : robuste sur un réseau de salle des fêtes).

@@ -8,8 +8,9 @@
   "use strict";
 
   /* ---------- Le lien : #<mode>=<payload>[.<clé>] ----------
-     payload = base64url de « 1|<partyId>|<nom>|<aaaa-mm-jj>|<c1>~<c2>… »
-     (le même format que les menus imprimés depuis l'app). */
+     payload = base64url de « 1|<partyId>|<nom>|<aaaa-mm-jj>|<c1>~<c2>…[|<signature>] »
+     (le même format que les menus imprimés depuis l'app ; la signature de
+     l'hôte, facultative, ferme la marche). */
   function decodePayload(modes) {
     const m = location.hash.match(/^#([a-z])=([A-Za-z0-9_-]+)(?:\.([A-Za-z0-9_-]{16,128}))?$/);
     if (!m || !modes.includes(m[1])) return null;
@@ -23,6 +24,7 @@
       return {
         mode: m[1], id: parts[1], name: parts[2], date: parts[3],
         cocktails, key: m[3] || null,
+        signature: (parts[5] || "").trim().slice(0, 40),
       };
     } catch { return null; }
   }
@@ -130,6 +132,49 @@
     };
   }
 
+  /* ---------- La signature de l'hôte (mêmes formules que l'app) ---------- */
+  function barTitle(name) {
+    const first = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").charAt(0).toLowerCase();
+    return `Le bar ${"aeiouyh".includes(first) ? "d'" : "de "}${name}`;
+  }
+  const CREDIT_LEAD = "Cocktails, carte et service de commande imaginés par";
+
+  /* ---------- Les doses (gobelet doseur), comme dans l'app ---------- */
+  /* « 2 », « 1½ », « ½ », « ¾ » — arrondi au quart. */
+  function doseNumber(value) {
+    const rounded = Math.round(value * 4) / 4;
+    const whole = Math.floor(rounded + 1e-9);
+    const fraction = { 1: "¼", 2: "½", 3: "¾" }[Math.round((rounded - whole) * 4)];
+    if (fraction) return whole === 0 ? fraction : `${whole}${fraction}`;
+    return String(whole);
+  }
+  function doseText(value) { return `${doseNumber(value)} dose${value >= 2 ? "s" : ""}`; }
+  /* Une quantité libre ne se multiplie que si elle commence par un nombre
+     entier (« 2 traits » → « 6 traits ») ; « à compléter » ou « 2,5 cl »
+     restent tels quels. */
+  function scaledFreeText(quantity, glasses) {
+    if (glasses <= 1) return quantity;
+    const m = quantity.match(/^(\d+)(?:(\s*à\s*)(\d+))?(?=\s|,(?!\d)|$)/);
+    if (!m) return quantity;
+    const head = m[3] !== undefined
+      ? `${Number(m[1]) * glasses}${m[2]}${Number(m[3]) * glasses}`
+      : `${Number(m[1]) * glasses}`;
+    return head + quantity.slice(m[0].length);
+  }
+  /* Une quantité libre qui ne se multiplie pas mais vaut pour UN verre
+     (« ½ canette », « un trait », « 1/2, en quartiers ») : à préciser
+     « par verre » quand on en prépare plusieurs. */
+  function perGlassOnly(quantity) {
+    const text = String(quantity || "").trim();
+    if (scaledFreeText(text, 2) !== text) return false;
+    return /^(\d|[½¼¾⅓⅔]|une?\s)/i.test(text);
+  }
+  function amount(line, glasses) {
+    return typeof line.dose === "number"
+      ? doseText(line.dose * glasses)
+      : scaledFreeText(line.texte || "", glasses);
+  }
+
   const STATUTS = {
     en_attente: "En attente",
     en_preparation: "En préparation",
@@ -140,6 +185,7 @@
   window.Tchin = {
     decodePayload, config, hasBackend, rpc, syncClock, minutesSince, since,
     $, el, frenchDate, cleanName, numero, randomToken, plural, store, STATUTS,
+    barTitle, CREDIT_LEAD, doseNumber, doseText, scaledFreeText, perGlassOnly, amount,
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)"),
   };
 })();
