@@ -52,11 +52,14 @@ de commande imaginés par Oscar » en pied. Les liens à 5 champs restent valide
    commandes, attente, lieux, précisions des invités), le plus ancien en
    haut : 30 commandes / 8 cocktails tiennent sur un écran ; « Lancer » part
    avec tout le lot, ▾ détaille chaque commande (lancer ou annuler une
-   seule) ; ② **Au shaker** — les **séries** par cocktail : doses totales
-   (sur deux colonnes), étapes repliables, puis la **tournée par lieu**
-   (« Servir ✓ » la Terrasse d'un geste, ou commande par commande) ;
-   « Ajouter à la série » lance les commandes du même cocktail qui
-   attendent. Les **servies** sont derrière le petit onglet « Servies · N »
+   seule) ; ② **Au shaker** — les **séries** par cocktail, aussi compactes
+   (même rangée, teintée d'or) avec « Tout servi ✓ » au bout ; ▾ ouvre la
+   **tournée par lieu** (« Servir ✓ » la Terrasse d'un geste, ou commande
+   par commande) et « Ajouter à la série ». Dans les deux colonnes, **un
+   appui sur la rangée ouvre la recette** en doses pour tout le lot (avec
+   ± et les étapes), en cas d'oubli. Après chaque changement, les boutons
+   ignorent un second appui trop rapproché (0,45 s) : la rangée suivante
+   qui remonte sous le doigt n'est pas servie par un rebond. Les **servies** sont derrière le petit onglet « Servies · N »
    (tiroir à droite, « ⋯ » pour rouvrir ou supprimer). L'écran de départ
    active aussi le son et garde l'écran allumé (Wake Lock) ; « Servi » se
    rattrape par « Annuler » dans le message ; pause et ruptures restent
