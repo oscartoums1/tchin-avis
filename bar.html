@@ -56,7 +56,7 @@
   .eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: 4px; color: var(--label); }
   .top { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; }
   .top > .service { order: 5; flex-basis: 100%; margin-top: 6px; }
-  #btn-carte, #awake { display: none; }
+  #btn-carte, #btn-servies, #btn-full, #awake { display: none; }
   .top .titles { flex: 1; min-width: 0; }
   .top h1 { font-family: var(--serif); font-weight: 700; font-size: 30px; line-height: 1.05; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .live { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--cream-2); margin-top: 6px; }
@@ -111,7 +111,7 @@
   .board[data-tab="en_attente"] .col[data-col="en_attente"],
   .board[data-tab="en_preparation"] .col[data-col="en_preparation"],
   .board[data-tab="servie"] .col[data-col="servie"] { display: block; }
-  .col-head, .todo-sum { display: none; }
+  .col-head { display: none; }
   .list { display: flex; flex-direction: column; gap: 10px; }
   .empty { text-align: center; color: var(--cream-3); font-size: 13.5px; padding: 34px 10px; font-family: var(--serif); font-style: italic; font-size: 17px; }
 
@@ -261,47 +261,54 @@
 
   /* =====================================================================
      MODE COMPTOIR — iPad (ou grand écran) posé sur le bar.
-     Trois colonnes = trois gestes : 1 À lancer → 2 Au shaker → 3 Servies.
-     Rien ne défile hors des colonnes ; tout se lit à bout de bras.
+     Tout l'écran pour deux colonnes : 1 À lancer → 2 Au shaker. Les
+     servies attendent derrière un petit onglet, dans un tiroir.
      ===================================================================== */
   body.comptoir { overflow: hidden; }
   .comptoir #page {
     max-width: none; height: 100vh; height: 100dvh;
-    padding: calc(14px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
-             calc(14px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
+    padding: calc(6px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right))
+             calc(8px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left));
   }
   .comptoir #v-bar { height: 100%; display: flex; flex-direction: column; }
-  .comptoir .top { flex-wrap: nowrap; align-items: center; }
-  .comptoir .top h1 { font-size: 26px; margin-top: 4px; }
-  .comptoir .live { margin-top: 4px; }
-  .comptoir .top > .service { order: 0; flex: none; flex-basis: auto; margin-top: 0; padding: 7px 8px 7px 16px; border-radius: 999px; }
+
+  /* L'en-tête : une seule ligne fine */
+  .comptoir .top { flex-wrap: nowrap; align-items: center; gap: 8px; padding: 0 4px; min-height: 52px; }
+  /* En plein écran, Safari (iPad) pose son bouton ✕ en haut à gauche : on lui laisse la place. */
+  .comptoir.plein .top { padding-left: 72px; }
+  .comptoir .top .titles { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+  .comptoir .top .eyebrow { flex: none; font-size: 9.5px; letter-spacing: 3px; }
+  .comptoir .top h1 { margin-top: 0; font-size: 21px; }
+  .comptoir .live { flex: none; margin-top: 0; font-size: 0; } /* le point vert suffit */
+  .comptoir .live i { width: 9px; height: 9px; }
+  .comptoir .top > .service { order: 0; flex: none; flex-basis: auto; margin: 0 0 0 auto; padding: 4px 6px 4px 14px; border-radius: 999px; }
   .comptoir .service .s-text span { display: none; }
-  .comptoir .service .s-text b { font-size: 14px; white-space: nowrap; }
-  .comptoir .icon-btn { height: 48px; min-width: 48px; padding: 0 16px; font-size: 14px; }
-  .comptoir #btn-carte { display: inline-flex; }
+  .comptoir .service .s-text b { font-size: 13.5px; white-space: nowrap; }
+  .comptoir .switch { width: 48px; height: 28px; }
+  .comptoir .switch::after { width: 22px; height: 22px; }
+  .comptoir .switch[aria-checked="true"]::after { transform: translateX(20px); }
+  .comptoir .icon-btn { height: 44px; min-width: 44px; padding: 0 14px; font-size: 13.5px; }
+  .comptoir #btn-carte, .comptoir #btn-servies { display: inline-flex; }
   .comptoir #btn-carte.alert { border-color: rgba(224, 104, 92, 0.6); color: var(--danger); }
-  .comptoir #awake:not([hidden]) {
-    display: inline-flex; align-items: center; gap: 6px; flex: none; white-space: nowrap;
-    font-size: 12px; font-weight: 600; color: var(--cream-2);
-  }
-  .comptoir .pause-msg { margin-top: 10px; }
-  .comptoir .prep, .comptoir .tabs, .comptoir .ruptures { display: none; }
+  .comptoir #btn-full:not([hidden]) { display: inline-flex; font-size: 17px; }
+  .comptoir #awake:not([hidden]) { display: inline-flex; flex: none; font-size: 15px; color: var(--cream-3); }
+  /* Le petit onglet des servies */
+  #btn-servies { border-color: rgba(143, 201, 160, 0.45); color: #A8D9B5; }
+  #btn-servies b { font-variant-numeric: tabular-nums; }
+  .comptoir .pause-msg { margin-top: 6px; }
+  .comptoir .prep, .comptoir .tabs, .comptoir .ruptures, .comptoir .col[data-col="servie"] { display: none !important; }
 
   .comptoir .board {
-    flex: 1; min-height: 0; margin-top: 14px; display: grid; gap: 14px;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    flex: 1; min-height: 0; margin-top: 6px; display: grid; gap: 8px;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   }
-  .comptoir.trois .board { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.85fr); }
   .comptoir .col {
     display: flex !important; flex-direction: column; min-height: 0;
-    background: rgba(255, 255, 255, 0.022); border: 1px solid var(--hairline); border-radius: 24px; padding: 12px 10px 0;
+    background: rgba(255, 255, 255, 0.022); border: 1px solid var(--hairline); border-radius: 18px; padding: 6px 6px 0;
   }
-  /* iPad en portrait : deux colonnes, « Au shaker » et « Servies » se partagent la seconde. */
-  .comptoir:not(.trois) .board[data-side="en_preparation"] .col[data-col="servie"],
-  .comptoir:not(.trois) .board[data-side="servie"] .col[data-col="en_preparation"] { display: none !important; }
-  .comptoir .col-head { display: flex; align-items: center; gap: 9px; padding: 2px 6px 10px; min-height: 46px; }
+  .comptoir .col-head { display: flex; align-items: center; gap: 9px; padding: 2px 6px 6px; min-height: 38px; }
   .col-head .step {
-    flex: none; width: 24px; height: 24px; border-radius: 50%; display: inline-grid; place-items: center;
+    flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center;
     font-style: normal; font-size: 12px; font-weight: 800; color: var(--on-gold);
     background: linear-gradient(135deg, var(--gold), var(--gold-deep));
   }
@@ -314,93 +321,124 @@
     margin-left: auto; min-width: 0; font-style: normal; font-size: 12.5px; color: var(--cream-2);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .col-head .sub.late { color: var(--copper); }
-  .col-head .sub.very-late { color: var(--danger); font-weight: 700; }
-  .side-btn {
-    display: none; margin-left: auto; flex: none; min-height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer;
-    background: var(--glass); border: 1px solid var(--stroke); font-size: 13px; font-weight: 600; color: var(--cream-2);
-  }
-  .comptoir:not(.trois) .side-btn { display: inline-flex; align-items: center; }
-  .comptoir:not(.trois) .col[data-col="en_preparation"] .col-head .sub { display: none; }
-  .comptoir .todo-sum:not(:empty) { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 4px 10px; }
-  .todo-sum button {
-    border-radius: 999px; padding: 6px 12px; min-height: 36px; cursor: pointer; font-size: 13px; font-weight: 700;
-    background: rgba(216, 169, 78, 0.08); border: 1px solid rgba(216, 169, 78, 0.3);
-  }
-  .todo-sum button b { font-family: var(--serif); font-size: 16px; color: var(--gold-light); margin-left: 4px; }
   .comptoir .list {
     flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
-    padding: 2px 2px 16px; gap: 12px; -webkit-overflow-scrolling: touch;
+    padding: 0 0 10px; gap: 8px; -webkit-overflow-scrolling: touch;
+  }
+  .comptoir .act { min-height: 54px; font-size: 17px; }
+  .comptoir .act-2 { min-height: 46px; font-size: 14px; padding: 0 14px; }
+  .t-late { color: var(--copper); font-weight: 600; }
+  .t-very-late { color: var(--danger); font-weight: 700; }
+
+  /* ① Les lots à lancer : un par cocktail, sur une seule rangée chacun ;
+     celui qui attend depuis le plus longtemps en haut. */
+  .lot {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px;
+    border-radius: 16px; padding: 8px 8px 8px 14px; background: var(--glass); border: 1px solid var(--stroke);
+  }
+  .lot.fresh { border-color: rgba(216, 169, 78, 0.7); box-shadow: 0 0 24px rgba(216, 169, 78, 0.18); animation: arrive 0.5s ease both; }
+  .lot.very-late { border-color: rgba(224, 104, 92, 0.6); }
+  .lot-main { flex: 1; min-width: 0; }
+  .lot-name { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+  .lot-name h3 { flex: none; max-width: 70%; font-family: var(--serif); font-weight: 700; font-size: 23px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lot-name .lot-q { min-width: 0; font-size: 14px; font-weight: 700; color: var(--gold-light); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .lot-info { display: flex; align-items: center; gap: 8px; margin-top: 2px; font-size: 13px; color: var(--cream-2); }
+  .lot-info .age { flex: none; }
+  .lot-info .places { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lot-notes { margin-top: 2px; font-family: var(--serif); font-style: italic; font-size: 15px; line-height: 1.3; color: var(--copper); }
+  .lot > .lot-more {
+    flex: none; width: 46px; height: 46px; border-radius: 50%; cursor: pointer; font-size: 15px;
+    background: none; border: 1px solid var(--stroke); color: var(--cream-2);
+  }
+  .lot > .act { flex: none; padding: 0 18px; white-space: nowrap; }
+  .lot-rows { flex: 1 1 100%; display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+  .lot-recipe { width: 100%; }
+  /* Colonne étroite (iPad en portrait) : le nom passe à la ligne plutôt que d'être coupé. */
+  .comptoir .col { container-type: inline-size; }
+  @container (max-width: 480px) {
+    .lot-name { flex-direction: column; align-items: flex-start; gap: 0; }
+    .lot-name h3 { max-width: 100%; white-space: normal; font-size: 21px; }
+    .lot > .act { padding: 0 14px; font-size: 16px; }
+    .lot > .lot-more { width: 44px; height: 44px; }
+  }
+  @media (max-width: 1000px) { .comptoir .top .eyebrow { display: none; } }
+
+  /* Le tiroir des servies */
+  dialog.drawer {
+    margin: 0 0 0 auto; width: min(460px, 92vw); height: 100%; max-height: none; max-width: none; padding: 0;
+    border: none; border-left: 1px solid rgba(216, 169, 78, 0.35); color: var(--cream);
+    background: linear-gradient(180deg, #1A150F, var(--bg) 220px);
+    box-shadow: -18px 0 60px rgba(0, 0, 0, 0.7); flex-direction: column;
+  }
+  dialog.drawer[open] { display: flex; animation: slide 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+  dialog.drawer::backdrop { background: rgba(5, 4, 3, 0.55); }
+  dialog.drawer:focus { outline: none; }
+  @keyframes slide { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .d-head { display: flex; align-items: center; gap: 12px; padding: calc(14px + env(safe-area-inset-top)) 14px 10px 18px; }
+  .d-head .titles { flex: 1; min-width: 0; }
+  .d-head h2 { font-family: var(--serif); font-weight: 700; font-size: 28px; line-height: 1.05; margin-top: 3px; }
+  #drawer-list {
+    flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 8px;
+    padding: 4px 12px calc(16px + env(safe-area-inset-bottom));
   }
 
-  /* Les tickets, lisibles à un mètre */
-  .comptoir .order { padding: 14px 16px; border-radius: 20px; }
-  .comptoir .order.very-late { border-color: rgba(224, 104, 92, 0.55); }
-  .comptoir .o-num { font-size: 32px; }
-  .comptoir .o-who { font-size: 18px; }
-  .comptoir .o-time { font-size: 13.5px; }
-  .comptoir .o-time.late, .comptoir .o-time.very-late { padding: 3px 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); }
-  .comptoir .o-what { font-size: 28px; }
-  .comptoir .act { min-height: 56px; font-size: 17px; }
-  .comptoir .act-2 { min-height: 56px; font-size: 14px; padding: 0 16px; }
-  /* « Je prépare » sur toute la largeur : la plus grande cible, le geste le plus fréquent. */
-  .comptoir .col[data-col="en_attente"] .o-actions .act { flex: 1 1 100%; white-space: nowrap; }
-  .comptoir .col[data-col="en_attente"] .o-actions .act-2 { flex: 1 1 0; }
-  .comptoir .col[data-col="servie"] .order { padding: 10px 12px; border-radius: 16px; }
-  .comptoir .col[data-col="servie"] .o-num { font-size: 22px; }
-  .comptoir .col[data-col="servie"] .o-who { font-size: 15px; }
-  .comptoir .col[data-col="servie"] .o-what { font-size: 19px; margin-top: 4px; }
-  .comptoir .col[data-col="servie"] .o-where { font-size: 12px; padding: 3px 9px; margin-top: 6px; }
-  .comptoir .col[data-col="servie"] .o-actions { margin-top: 8px; gap: 6px; }
-  .comptoir .col[data-col="servie"] .act-2 { min-height: 40px; font-size: 12.5px; padding: 0 12px; }
+  /* Une ligne de commande (détail d'un lot, tournée, servies) */
+  .row {
+    display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 12px; border-radius: 16px;
+    background: rgba(11, 10, 9, 0.5); border: 1px solid var(--stroke);
+  }
+  .row.fresh { border-color: rgba(216, 169, 78, 0.7); }
+  .row .r-num { flex: none; min-width: 30px; font-family: var(--serif); font-weight: 700; font-size: 22px; color: var(--gold-light); font-variant-numeric: lining-nums tabular-nums; }
+  .row .r-who { flex: 1; min-width: 0; }
+  .row .r-who b { display: block; font-size: 15.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .r-line { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 8px; margin-top: 2px; font-size: 12.5px; color: var(--cream-2); }
+  .row .r-line .q { color: var(--gold-light); font-weight: 700; }
+  .row .r-line i { font-family: var(--serif); font-size: 14.5px; color: var(--copper); }
+  .row .act { flex: none; min-height: 48px; font-size: 15px; padding: 0 16px; }
+  .row .act-2 { flex: none; min-height: 48px; min-width: 48px; font-size: 13.5px; padding: 0 12px; }
 
-  /* Une série au shaker : les doses totales, les étapes, puis la tournée à servir */
+  /* ② Une série au shaker : les doses totales, puis la tournée par lieu */
   .batch {
-    border-radius: 24px; padding: 16px 16px 14px;
+    border-radius: 24px; padding: 14px 14px 12px 16px;
     background: linear-gradient(180deg, rgba(216, 169, 78, 0.11), rgba(216, 169, 78, 0.025) 160px);
     border: 1px solid rgba(216, 169, 78, 0.45);
   }
   .batch.fresh { animation: arrive 0.5s ease both; }
   .b-head { display: flex; align-items: baseline; gap: 12px; }
-  .b-head h3 { flex: 1; min-width: 0; font-family: var(--serif); font-weight: 700; font-size: 31px; line-height: 1.05; overflow-wrap: anywhere; }
-  .b-head .b-q { font-family: var(--serif); font-weight: 700; font-size: 34px; line-height: 1; color: var(--gold-light); white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
-  .b-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; margin-top: 6px; font-size: 13px; color: var(--cream-2); }
-  .b-sub .late { color: var(--copper); }
-  .b-sub .very-late { color: var(--danger); font-weight: 700; }
+  .b-head h3 { flex: 1; min-width: 0; font-family: var(--serif); font-weight: 700; font-size: 29px; line-height: 1.05; overflow-wrap: anywhere; }
+  .b-head .b-q { font-family: var(--serif); font-weight: 700; font-size: 32px; line-height: 1; color: var(--gold-light); white-space: nowrap; font-variant-numeric: lining-nums tabular-nums; }
+  .b-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; margin-top: 5px; font-size: 13px; color: var(--cream-2); }
   .b-sub button {
-    margin-left: auto; min-height: 36px; padding: 0 12px; border-radius: 999px; cursor: pointer;
+    margin-left: auto; min-height: 40px; padding: 0 14px; border-radius: 999px; cursor: pointer;
     background: none; border: 1px solid var(--stroke); color: var(--cream-2); font-size: 12.5px; font-weight: 600;
   }
-  .b-doses { list-style: none; margin-top: 12px; border-top: 1px solid var(--hairline); }
-  .b-doses li { display: flex; align-items: baseline; gap: 12px; padding: 10px 2px; border-bottom: 1px solid var(--hairline); }
-  .b-doses .i-name { flex: 1; min-width: 0; font-size: 17px; font-weight: 600; }
-  .b-doses .i-amount { text-align: right; font-size: 23px; font-weight: 800; color: var(--gold-light); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .b-doses .i-amount.free { color: var(--copper); font-weight: 600; font-size: 16px; white-space: normal; max-width: 55%; }
+  .b-doses { list-style: none; margin-top: 10px; border-top: 1px solid var(--hairline); }
+  /* Sur la largeur du comptoir, les doses passent sur deux colonnes. */
+  .comptoir .b-doses { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); column-gap: 22px; }
+  .b-doses li { display: flex; align-items: baseline; gap: 12px; padding: 8px 2px; border-bottom: 1px solid var(--hairline); }
+  .b-doses .i-name { flex: 1; min-width: 0; font-size: 16.5px; font-weight: 600; }
+  .b-doses .i-amount { text-align: right; font-size: 22px; font-weight: 800; color: var(--gold-light); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .b-doses .i-amount.free { color: var(--copper); font-weight: 600; font-size: 15.5px; white-space: normal; max-width: 55%; }
   .b-doses .i-amount small { display: block; font-size: 11.5px; font-weight: 500; color: var(--cream-3); margin-top: 1px; }
   .b-missing { margin-top: 10px; font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--cream-2); }
   .b-steps summary {
-    list-style: none; cursor: pointer; padding: 12px 2px 4px; min-height: 40px;
+    list-style: none; cursor: pointer; display: flex; align-items: center; min-height: 44px; padding: 0 2px;
     font-size: 11px; font-weight: 700; letter-spacing: 3px; color: var(--label);
   }
   .b-steps summary::-webkit-details-marker { display: none; }
-  .b-steps summary::after { content: "  ▾"; letter-spacing: 0; }
-  .b-steps[open] summary::after { content: "  ▴"; }
-  .b-steps .r-steps li { font-size: 15px; padding: 5px 0; }
-  .b-orders { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-  .b-row {
-    display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 12px; border-radius: 18px;
-    background: rgba(11, 10, 9, 0.5); border: 1px solid var(--stroke);
+  .b-steps summary::after { content: "▾"; margin-left: 8px; letter-spacing: 0; }
+  .b-steps[open] summary::after { content: "▴"; }
+  .b-steps .r-steps li { font-size: 15px; padding: 4px 0; }
+  .b-place { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-top: 8px; padding: 0 2px; }
+  .b-place b { font-size: 11px; letter-spacing: 2.5px; color: var(--label); white-space: nowrap; }
+  .b-place span { font-size: 12.5px; color: var(--cream-2); white-space: nowrap; }
+  .b-place button {
+    margin-left: auto; min-height: 44px; padding: 0 16px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+    background: rgba(143, 201, 160, 0.12); border: 1px solid rgba(143, 201, 160, 0.55); color: #A8D9B5;
+    font-size: 14px; font-weight: 700;
   }
-  .b-row .r-num { flex: none; min-width: 34px; font-family: var(--serif); font-weight: 700; font-size: 25px; color: var(--gold-light); font-variant-numeric: lining-nums tabular-nums; }
-  .b-row .r-who { flex: 1; min-width: 0; }
-  .b-row .r-who b { display: block; font-size: 16.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .b-row .r-line { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin-top: 3px; font-size: 13px; color: var(--cream-2); }
-  .b-row .r-line .o-where { margin-top: 0; font-size: 12.5px; padding: 3px 9px; }
-  .b-row .r-line .q { color: var(--gold-light); font-weight: 700; }
-  .b-row .r-line i { font-family: var(--serif); font-size: 15px; color: var(--copper); }
-  .b-row .act { flex: none; min-height: 52px; padding: 0 18px; }
-  .b-row .act-2 { flex: none; min-height: 52px; padding: 0 14px; }
-  .b-all { width: 100%; margin-top: 10px; }
+  .b-orders { display: flex; flex-direction: column; gap: 6px; }
+  .b-all { width: 100%; margin-top: 12px; }
   .b-more {
     width: 100%; margin-top: 10px; min-height: 54px; padding: 10px 16px; border-radius: 18px; cursor: pointer;
     display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left;
@@ -408,6 +446,11 @@
     font-size: 15px; font-weight: 600;
   }
   .b-more strong { flex: none; color: var(--gold-light); font-weight: 800; }
+
+  /* ③ Les servies : une ligne chacune, le reste derrière « ⋯ » */
+  .s-more { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 4px 2px 52px; }
+  .s-more p { flex: 1 1 100%; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--cream); }
+  .s-more .act-2 { min-height: 44px; }
 
   /* Le départ du service : un geste pour le son et l'écran allumé */
   #gate {
@@ -463,9 +506,11 @@
         </div>
         <button class="switch" id="switch-open" role="switch" aria-checked="true" aria-label="Bar ouvert"></button>
       </div>
-      <span id="awake" hidden>☀︎ Écran allumé</span>
+      <span id="awake" hidden title="L'écran reste allumé" role="img" aria-label="Écran maintenu allumé">☀︎</span>
+      <button class="icon-btn" id="btn-servies" type="button" aria-haspopup="dialog">Servies · <b id="n-servies">0</b></button>
       <button class="icon-btn" id="btn-carte" type="button">🍸 Carte</button>
       <button class="icon-btn" id="btn-sound" aria-pressed="false">🔕 Son</button>
+      <button class="icon-btn" id="btn-full" type="button" hidden aria-label="Plein écran">⛶</button>
     </div>
 
     <input class="pause-msg" id="pause-msg" maxlength="200" hidden
@@ -481,18 +526,17 @@
       <button class="tab" data-tab="en_preparation" role="tab">Préparation <span class="n" id="n-en_preparation">0</span></button>
       <button class="tab" data-tab="servie" role="tab">Servies <span class="n" id="n-servie">0</span></button>
     </div>
-    <div class="board" id="board" data-tab="en_attente" data-side="en_preparation">
+    <div class="board" id="board" data-tab="en_attente">
       <section class="col" data-col="en_attente" aria-label="À lancer">
         <div class="col-head"><i class="step">1</i><b>À LANCER</b><span class="cnt" id="h-en_attente"></span><em class="sub" id="sub-en_attente"></em></div>
-        <div class="todo-sum" id="todo-sum"></div>
         <div class="list" id="list-en_attente"></div>
       </section>
       <section class="col" data-col="en_preparation" aria-label="Au shaker">
-        <div class="col-head"><i class="step">2</i><b>AU SHAKER</b><span class="cnt" id="h-en_preparation"></span><em class="sub" id="sub-en_preparation"></em><button class="side-btn" type="button" data-side="servie" id="side-servie">Servies ›</button></div>
+        <div class="col-head"><i class="step">2</i><b>AU SHAKER</b><span class="cnt" id="h-en_preparation"></span><em class="sub" id="sub-en_preparation"></em></div>
         <div class="list" id="list-en_preparation"></div>
       </section>
       <section class="col" data-col="servie" aria-label="Servies">
-        <div class="col-head"><i class="step">3</i><b>SERVIES</b><span class="cnt" id="h-servie"></span><button class="side-btn" type="button" data-side="en_preparation" id="side-shaker">‹ Au shaker</button></div>
+        <div class="col-head"><i class="step">3</i><b>SERVIES</b><span class="cnt" id="h-servie"></span></div>
         <div class="list" id="list-servie"></div>
       </section>
     </div>
@@ -516,11 +560,24 @@
       <li><span>🔔</span>Un tintement à chaque nouvelle commande</li>
       <li><span>☀︎</span>L'écran reste allumé pendant le service</li>
       <li><span>🍸</span>Les doses s'additionnent par série, au shaker</li>
+      <li><span>⛶</span>Le bar en plein écran, sans la barre du navigateur</li>
     </ul>
     <button class="act" id="g-start" type="button">Commencer le service</button>
     <button class="g-skip" id="g-skip" type="button">Continuer sans le son</button>
   </div>
 </div>
+
+<!-- Comptoir : les servies de la soirée, derrière le petit onglet. -->
+<dialog id="servies" class="drawer" aria-labelledby="s-title" tabindex="-1">
+  <div class="d-head">
+    <div class="titles">
+      <div class="eyebrow">LA SOIRÉE</div>
+      <h2 id="s-title">Servies · <span id="s-count">0</span></h2>
+    </div>
+    <button class="icon-btn" id="s-close" type="button" aria-label="Fermer les servies">✕</button>
+  </div>
+  <div id="drawer-list"></div>
+</dialog>
 
 <dialog id="carte" class="sheet" aria-labelledby="c-title" tabindex="-1">
   <div class="r-sheet">
@@ -586,22 +643,45 @@ let soundOn = false;
 let audio = null;
 let lastOk = 0;
 let pollTimer = null;
-let side = "en_preparation"; // iPad en portrait : ce que montre la seconde colonne
 let wakeLock = null;
 let wantAwake = false;
 const armedUntil = new Map(); // action en deux touches → jusqu'à quand elle reste armée
-let stepsClosed = new Set();  // séries dont le barman a replié les étapes
+let stepsOpen = new Set();    // séries dont le barman a déplié les étapes (mémorisé)
+const openLots = new Set();   // lots « À lancer » dépliés
+const openServed = new Set(); // servies dont on a ouvert les actions
 
-/* Comptoir = grand écran posé sur le bar (iPad) ; trois colonnes en paysage. */
+/* Comptoir = grand écran posé sur le bar (iPad) : deux colonnes plein écran. */
 const comptoirQuery = matchMedia("(min-width: 740px) and (min-height: 560px)");
-const troisQuery = matchMedia("(min-width: 1000px)");
 let comptoir = false;
 function applyMode() {
   comptoir = comptoirQuery.matches;
   document.body.classList.toggle("comptoir", comptoir);
-  document.body.classList.toggle("trois", comptoir && troisQuery.matches);
 }
 applyMode();
+
+/* Plein écran (iPad, ordinateur ; pas l'iPhone) : plus de barre du navigateur. */
+function canFullscreen() {
+  const d = document.documentElement;
+  return Boolean(d.requestFullscreen || d.webkitRequestFullscreen);
+}
+function isFullscreen() {
+  return Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+}
+function setFullscreen(on) {
+  try {
+    const d = document.documentElement;
+    const call = on ? (d.requestFullscreen || d.webkitRequestFullscreen) : (document.exitFullscreen || document.webkitExitFullscreen);
+    const result = call && call.call(on ? d : document);
+    if (result && result.catch) result.catch(() => {});
+  } catch {}
+}
+function renderFullscreen() {
+  const b = $("btn-full");
+  b.hidden = !(comptoir && canFullscreen());
+  b.classList.toggle("on", isFullscreen());
+  b.setAttribute("aria-label", isFullscreen() ? "Quitter le plein écran" : "Plein écran");
+  document.body.classList.toggle("plein", isFullscreen());
+}
 
 /* Un message bref ; avec `action` ({ label, run }), un bouton pour rattraper
    un geste raté (« Annuler »), plutôt qu'une fenêtre de confirmation. */
@@ -638,7 +718,7 @@ async function boot() {
   $("party-name").textContent = party.name || "La soirée";
   if (party.signature) $("bar-eyebrow").textContent = T.barTitle(party.signature).toUpperCase();
   if (!T.hasBackend()) { off("Base non configurée", "Le site n'est pas relié à sa base de commandes."); return; }
-  stepsClosed = new Set(T.store(party.id).get("etapes-repliees", []));
+  stepsOpen = new Set(T.store(party.id).get("etapes-ouvertes", []));
   if (party.signature) $("g-eyebrow").textContent = T.barTitle(party.signature).toUpperCase();
   wire();
   await load();
@@ -654,13 +734,19 @@ function wire() {
     tab = b.dataset.tab;
     render();
   }));
-  document.querySelectorAll(".side-btn").forEach(b => b.addEventListener("click", () => {
-    side = b.dataset.side;
-    render();
-  }));
-  const relayout = () => { applyMode(); if (soiree) render(); };
+  const relayout = () => {
+    applyMode();
+    renderFullscreen();
+    if (!comptoir && $("servies").open) $("servies").close();
+    if (soiree) render();
+  };
   comptoirQuery.addEventListener("change", relayout);
-  troisQuery.addEventListener("change", relayout);
+  renderFullscreen();
+  $("btn-full").addEventListener("click", () => setFullscreen(!isFullscreen()));
+  document.addEventListener("fullscreenchange", renderFullscreen);
+  document.addEventListener("webkitfullscreenchange", renderFullscreen);
+  $("btn-servies").addEventListener("click", () => { $("servies").showModal(); $("servies").focus(); });
+  $("s-close").addEventListener("click", () => $("servies").close());
   $("switch-open").addEventListener("click", toggleOpen);
   $("pause-msg").addEventListener("change", () => saveSettings({ p_message: $("pause-msg").value.trim() }));
   $("btn-sound").addEventListener("click", () => setSound(!soundOn));
@@ -671,7 +757,7 @@ function wire() {
   });
   // Au premier geste (téléphone compris), on garde l'écran allumé pendant le service.
   document.addEventListener("pointerdown", keepAwake, { once: true });
-  for (const id of ["recipe", "carte"]) {
+  for (const id of ["recipe", "carte", "servies"]) {
     // Un appui hors de la fenêtre la ferme (le fond appartient au <dialog> lui-même).
     $(id).addEventListener("click", e => { if (e.target === $(id)) $(id).close(); });
   }
@@ -694,9 +780,11 @@ function setSound(on) {
   $("btn-sound").setAttribute("aria-pressed", String(soundOn));
 }
 
+/* Le geste de départ ouvre aussi le plein écran : toute la place pour le bar. */
 function startService() {
   $("gate").hidden = true;
   keepAwake();
+  if (canFullscreen() && !isFullscreen()) setFullscreen(true);
 }
 
 /* L'écran reste allumé tant que la page est au premier plan (relâché par le
@@ -804,11 +892,12 @@ function render() {
 
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
   $("board").dataset.tab = tab;
-  $("board").dataset.side = side;
+  // Au comptoir, les servies vivent dans le tiroir ; sur téléphone, dans leur onglet.
+  $(comptoir ? "list-servie" : "drawer-list").textContent = "";
   for (const [statut, list] of Object.entries(groups)) {
     $(`n-${statut}`).textContent = list.length;
     $(`h-${statut}`).textContent = list.length;
-    const holder = $(`list-${statut}`);
+    const holder = comptoir && statut === "servie" ? $("drawer-list") : $(`list-${statut}`);
     const scroll = holder.scrollTop; // la colonne ne saute pas à chaque rafraîchissement
     holder.textContent = "";
     if (!list.length) {
@@ -818,10 +907,14 @@ function render() {
         servie: "Rien de servi pour l'instant.",
       }[statut]));
     }
-    if (statut === "en_preparation" && comptoir) {
+    if (!comptoir) {
+      for (const o of list) holder.append(card(o));
+    } else if (statut === "en_attente") {
+      for (const lot of byCocktail(list)) holder.append(lotCard(lot, series));
+    } else if (statut === "en_preparation") {
       for (const serie of series) holder.append(batchCard(serie, groups.en_attente));
     } else {
-      for (const o of list) holder.append(card(o, series));
+      for (const o of list) holder.append(servedItem(o));
     }
     holder.scrollTop = scroll;
   }
@@ -832,51 +925,135 @@ function render() {
 
 /* Les en-têtes des colonnes du comptoir : ce qui presse, d'un coup d'œil. */
 function renderHeads(groups, series) {
+  const waitingGlasses = groups.en_attente.reduce((n, o) => n + (o.quantite || 1), 0);
   const oldest = groups.en_attente[0];
-  const sub = $("sub-en_attente");
   const minutes = oldest ? T.minutesSince(oldest.created_at) : 0;
-  sub.textContent = oldest && minutes >= 1 ? `attend depuis ${minutes} min` : "";
-  sub.className = `sub${minutes >= 15 ? " very-late" : minutes >= 8 ? " late" : ""}`;
+  const sub = $("sub-en_attente");
+  sub.textContent = !oldest ? ""
+    : `${T.plural(waitingGlasses, "verre", "verres")}${minutes >= 1 ? ` · ⏱ ${minutes} min` : ""}`;
+  sub.className = `sub ${ageClass(minutes)}`;
   const glasses = series.reduce((n, s) => n + s.glasses, 0);
   $("sub-en_preparation").textContent = glasses ? T.plural(glasses, "verre", "verres") : "";
-  $("side-servie").textContent = `Servies (${groups.servie.length}) ›`;
-  $("side-shaker").textContent = `‹ Au shaker (${groups.en_preparation.length})`;
-
-  // Le total à lancer, par cocktail : pour anticiper (menthe, glaçons…).
-  const sum = $("todo-sum");
-  sum.textContent = "";
-  if (!comptoir) return;
-  const totals = new Map();
-  for (const o of groups.en_attente) {
-    const entry = totals.get(o.cocktail) || { name: o.cocktail, count: 0 };
-    entry.count += o.quantite || 1;
-    totals.set(o.cocktail, entry);
-  }
-  if (totals.size < 2) return;
-  for (const { name, count } of [...totals.values()].sort((a, b) => b.count - a.count)) {
-    const b = button("", name, () => openRecipe(name, count), `${name}, ${count} à lancer — voir la recette`);
-    b.append(el("b", "", `×${count}`));
-    sum.append(b);
-  }
+  $("n-servies").textContent = groups.servie.length;
+  $("s-count").textContent = groups.servie.length;
 }
 
-/* ---------- Au shaker : les commandes lancées, en séries par cocktail ---------- */
-function batches(prep) {
+/* Les délais : cuivre à 8 min, rouge à 15. */
+function ageClass(minutes) {
+  return minutes >= 15 ? "t-very-late" : minutes >= 8 ? "t-late" : "";
+}
+function waitText(minutes) {
+  return minutes < 1 ? "à l'instant" : `${minutes} min`;
+}
+
+/* Les commandes regroupées par cocktail, dans l'ordre de la liste reçue
+   (celle de la base : la plus ancienne d'abord). */
+function byCocktail(list) {
   const map = new Map();
-  for (const o of prep) {
+  for (const o of list) {
     const key = String(o.cocktail).toLowerCase();
-    const started = o.prepa_at || o.created_at;
-    let serie = map.get(key);
-    if (!serie) {
-      serie = { key, name: o.cocktail, orders: [], glasses: 0, started };
-      map.set(key, serie);
+    let group = map.get(key);
+    if (!group) {
+      group = { key, name: o.cocktail, orders: [], glasses: 0, started: o.prepa_at || o.created_at };
+      map.set(key, group);
     }
-    serie.orders.push(o);
-    serie.glasses += o.quantite || 1;
-    if (started < serie.started) serie.started = started;
+    group.orders.push(o);
+    group.glasses += o.quantite || 1;
+    const started = o.prepa_at || o.created_at;
+    if (started < group.started) group.started = started;
   }
+  return [...map.values()];
+}
+
+/* Les commandes d'une série par lieu, dans l'ordre des lieux de la soirée. */
+function byPlace(list) {
+  const order = (soiree.lieux || []).map(l => String(l).toLowerCase());
+  const map = new Map();
+  for (const o of list) {
+    const key = String(o.lieu).toLowerCase();
+    let group = map.get(key);
+    if (!group) { group = { key, lieu: o.lieu, orders: [], glasses: 0 }; map.set(key, group); }
+    group.orders.push(o);
+    group.glasses += o.quantite || 1;
+  }
+  const rank = g => { const i = order.indexOf(g.key); return i < 0 ? order.length : i; };
+  return [...map.values()].sort((a, b) => rank(a) - rank(b));
+}
+
+/* Une commande sur une ligne : n°, prénom, quantité, lieu, précision. */
+function orderRow(o, actions, { title, place = true, age = false, extra = "" } = {}) {
+  const row = el("div", "row");
+  if (fresh.has(o.id)) row.classList.add("fresh");
+  row.append(el("span", "r-num", String(o.numero)));
+  const who = el("div", "r-who");
+  who.append(el("b", "", title || o.invite));
+  const line = el("div", "r-line");
+  if (o.quantite > 1) line.append(el("span", "q", `× ${o.quantite}`));
+  if (place) line.append(el("span", "", `📍 ${o.lieu}`));
+  if (age) {
+    const minutes = T.minutesSince(o.created_at);
+    line.append(el("span", ageClass(minutes), `⏱ ${waitText(minutes)}`));
+  }
+  if (extra) line.append(el("span", "", extra));
+  if (o.note) line.append(el("i", "", `« ${o.note} »`));
+  who.append(line);
+  row.append(who, ...actions);
+  return row;
+}
+
+/* ---------- ① À lancer : un lot par cocktail ---------- */
+function lotCard(lot, series) {
+  const node = el("article", "lot");
+  if (lot.orders.some(o => fresh.has(o.id))) node.classList.add("fresh");
+  const minutes = T.minutesSince(lot.orders[0].created_at);
+  if (minutes >= 15) node.classList.add("very-late");
+  const joins = series.some(s => s.key === lot.key);
+  const glasses = T.plural(lot.glasses, "verre", "verres");
+  const open = openLots.has(lot.key);
+
+  // Une rangée : nom, verres, attente, lieux | détail ▾ | Lancer.
+  const main = el("div", "lot-main");
+  const name = el("div", "lot-name");
+  name.append(el("h3", "", lot.name),
+    el("span", "lot-q", `${glasses} · ${T.plural(lot.orders.length, "commande", "commandes")}`));
+  const info = el("div", "lot-info");
+  info.append(el("span", `age ${ageClass(minutes)}`, `⏱ ${waitText(minutes)}`));
+  info.append(el("span", "places", lot.orders.length === 1
+    ? `${lot.orders[0].invite} · 📍 ${lot.orders[0].lieu}`
+    : byPlace(lot.orders).map(p => `${p.lieu} ${p.glasses}`).join(" · ")));
+  main.append(name, info);
+  // Repliées, les précisions restent visibles : c'est là qu'on se trompe.
+  const notes = lot.orders.filter(o => o.note);
+  if (notes.length && !open) main.append(el("p", "lot-notes", notes.map(o => `${o.invite} : « ${o.note} »`).join(" · ")));
+  node.append(main);
+  node.append(button("lot-more", open ? "▴" : "▾", () => {
+    if (open) openLots.delete(lot.key); else openLots.add(lot.key);
+    render();
+  }, open ? `Masquer le détail : ${lot.name}` : `Voir chaque commande : ${lot.name}`));
+  node.append(button("act", joins ? "Ajouter →" : "Lancer →", () => moveMany(lot.orders, "en_preparation"),
+    `${joins ? "Ajouter à la série" : "Lancer"} : ${lot.name}, ${glasses}`));
+
+  if (open) {
+    const rows = el("div", "lot-rows");
+    for (const o of lot.orders) {
+      rows.append(orderRow(o, [
+        button("act-2", joins ? "Ajouter" : "Lancer", () => moveMany([o], "en_preparation"), `Lancer la commande ${o.numero}`),
+        armed("✕", "Annuler ?", () => moveMany([o], "annulee", `N° ${o.numero} annulée`), `annuler:${o.id}`,
+          `Annuler la commande ${o.numero}`),
+      ], { age: true }));
+    }
+    rows.append(button("act-2 lot-recipe", "Voir la recette", () => openRecipe(lot.name, lot.glasses),
+      `Recette de ${lot.name} pour ${glasses}`));
+    node.append(rows);
+  }
+  node.addEventListener("pointerdown", () => lot.orders.forEach(o => fresh.delete(o.id)), { once: true });
+  return node;
+}
+
+/* ---------- ② Au shaker : les commandes lancées, en séries par cocktail ---------- */
+function batches(prep) {
   // La série lancée la première reste en haut : on la termine avant d'en commencer une autre.
-  return [...map.values()].sort((a, b) => (a.started < b.started ? -1 : a.started > b.started ? 1 : 0));
+  return byCocktail(prep).sort((a, b) => (a.started < b.started ? -1 : a.started > b.started ? 1 : 0));
 }
 
 function batchCard(serie, waitingOrders) {
@@ -893,7 +1070,7 @@ function batchCard(serie, waitingOrders) {
   if (meta) sub.append(el("span", "", meta));
   const oldest = serie.orders.reduce((a, o) => (o.created_at < a.created_at ? o : a));
   const minutes = T.minutesSince(oldest.created_at);
-  sub.append(el("span", minutes >= 15 ? "very-late" : minutes >= 8 ? "late" : "", `commandé ${T.since(oldest.created_at)}`));
+  sub.append(el("span", ageClass(minutes), `⏱ ${waitText(minutes)}`));
   if (recette) {
     sub.append(button("", "Ajuster ±", () => openRecipe(serie.name, serie.glasses),
       `Recette de ${serie.name} : ajuster le nombre de verres`));
@@ -904,15 +1081,16 @@ function batchCard(serie, waitingOrders) {
     node.append(doseList(recette, serie.glasses, "b-doses"));
     const steps = recette.etapes || [];
     if (steps.length) {
+      // Repliées par défaut (les doses suffisent après le premier) ; on s'en souvient.
       const details = el("details", "b-steps");
-      details.open = !stepsClosed.has(serie.key);
-      details.append(el("summary", "", "ÉTAPES"));
+      details.open = stepsOpen.has(serie.key);
+      details.append(el("summary", "", `ÉTAPES (${steps.length})`));
       const ol = el("ol", "r-steps");
       for (const step of steps) ol.append(el("li", "", step));
       details.append(ol);
       details.addEventListener("toggle", () => {
-        if (details.open) stepsClosed.delete(serie.key); else stepsClosed.add(serie.key);
-        T.store(party.id).set("etapes-repliees", [...stepsClosed]);
+        if (details.open) stepsOpen.add(serie.key); else stepsOpen.delete(serie.key);
+        T.store(party.id).set("etapes-ouvertes", [...stepsOpen]);
       });
       node.append(details);
     }
@@ -920,26 +1098,28 @@ function batchCard(serie, waitingOrders) {
     node.append(el("p", "b-missing", "La recette n'a pas encore été envoyée par l'organisateur."));
   }
 
-  // La tournée : à qui, où — « Servi » au fur et à mesure.
-  const rows = el("div", "b-orders");
-  for (const o of serie.orders) {
-    const row = el("div", "b-row");
-    row.append(el("span", "r-num", String(o.numero)));
-    const who = el("div", "r-who");
-    who.append(el("b", "", o.invite));
-    const line = el("div", "r-line");
-    line.append(el("span", "o-where", `📍 ${o.lieu}`));
-    if (o.quantite > 1) line.append(el("span", "q", `× ${o.quantite}`));
-    if (o.note) line.append(el("i", "", `« ${o.note} »`));
-    who.append(line);
-    row.append(who);
-    row.append(button("act serve", "Servi ✓", () => serve([o]), `Commande ${o.numero} servie`));
-    row.append(button("act-2", "↩︎", () => moveMany([o], "en_attente"), `Remettre la commande ${o.numero} en attente`));
-    rows.append(row);
+  // La tournée, lieu par lieu : on sert un plateau entier d'un geste.
+  const places = byPlace(serie.orders);
+  for (const place of places) {
+    const head = el("div", "b-place");
+    head.append(el("b", "", place.lieu.toUpperCase()), el("span", "", T.plural(place.glasses, "verre", "verres")));
+    if (place.orders.length > 1) {
+      head.append(button("", `Servir ✓ (${place.orders.length})`, () => serve(place.orders, place.lieu),
+        `Servir les ${place.orders.length} commandes : ${place.lieu}`));
+    }
+    node.append(head);
+    const rows = el("div", "b-orders");
+    for (const o of place.orders) {
+      rows.append(orderRow(o, [
+        button("act serve", "Servi ✓", () => serve([o]), `Commande ${o.numero} servie`),
+        button("act-2", "↩︎", () => moveMany([o], "en_attente"), `Remettre la commande ${o.numero} en attente`),
+      ], { place: false }));
+    }
+    node.append(rows);
   }
-  node.append(rows);
-  if (serie.orders.length > 1) {
-    node.append(button("act serve b-all", `Tout servi ✓ · ${serie.orders.length} commandes`, () => serve(serie.orders)));
+  if (places.length > 1) {
+    node.append(button("act serve b-all", `Tout servi ✓ · ${T.plural(serie.orders.length, "commande", "commandes")}`,
+      () => serve(serie.orders)));
   }
 
   // D'autres commandes du même cocktail attendent : on les ajoute à la série.
@@ -955,10 +1135,41 @@ function batchCard(serie, waitingOrders) {
   return node;
 }
 
-function serve(list) {
-  moveMany(list, "servie", list.length > 1
-    ? `${list.length} commandes servies`
-    : `N° ${list[0].numero} servie · ${list[0].invite}`);
+function serve(list, lieu) {
+  moveMany(list, "servie",
+    list.length === 1 ? `N° ${list[0].numero} servie · ${list[0].invite}`
+    : lieu ? `${lieu} : ${list.length} commandes servies`
+    : `${list.length} commandes servies`);
+}
+
+/* ---------- ③ Servies : une ligne chacune, le reste derrière « ⋯ » ---------- */
+function servedItem(o) {
+  const item = el("div", "s-item");
+  const open = openServed.has(o.id);
+  const notes = [o.note_cocktail, o.note_rapidite, o.note_service, o.note_experience].filter(Boolean);
+  const rating = notes.length
+    ? `★ ${(notes.reduce((a, b) => a + b, 0) / notes.length).toFixed(1).replace(".", ",").replace(",0", "")}`
+    : "";
+  item.append(orderRow(o, [
+    button("act-2", open ? "▴" : "⋯", () => {
+      if (open) openServed.delete(o.id); else openServed.add(o.id);
+      render();
+    }, open ? "Moins d'actions" : `Actions : commande ${o.numero}`),
+  ], {
+    // Colonne étroite : le cocktail en titre, qui et où dessous.
+    title: o.cocktail,
+    place: false,
+    extra: [o.invite, o.lieu, o.servie_at ? T.since(o.servie_at) : "", rating].filter(Boolean).join(" · "),
+  }));
+  if (open) {
+    const more = el("div", "s-more");
+    if (o.commentaire) more.append(el("p", "", `« ${o.commentaire} »`));
+    more.append(button("act-2", "↩︎ Pas encore servie", () => moveMany([o], "en_preparation")));
+    if (o.notee_at) more.append(armed("Retirer l'avis", "Confirmer ?", () => removeRating(o), `avis:${o.id}`));
+    more.append(armed("Supprimer", "Confirmer ?", () => removeOrder(o), `supprimer:${o.id}`));
+    item.append(more);
+  }
+  return item;
 }
 
 /* « À préparer » : tout ce qui est en attente ou en préparation, regroupé par
@@ -1057,7 +1268,8 @@ function doseList(recette, glasses, className) {
   return list;
 }
 
-function card(o, series = []) {
+/* Une commande en carte (téléphone). */
+function card(o) {
   const node = el("article", "order");
   if (fresh.has(o.id)) node.classList.add("fresh");
   const top = el("div", "o-top");
@@ -1066,7 +1278,6 @@ function card(o, series = []) {
   if (o.statut !== "servie") {
     if (minutes >= 15) time.classList.add("very-late");
     else if (minutes >= 8) time.classList.add("late");
-    if (minutes >= 15 && o.statut === "en_attente") node.classList.add("very-late");
   }
   top.append(el("span", "o-num", String(o.numero)), el("span", "o-who", o.invite), time);
   node.append(top);
@@ -1093,9 +1304,7 @@ function card(o, series = []) {
   const recipeButton = () => button("act-2", "Recette", () => openRecipe(o.cocktail, o.quantite),
     `Recette de ${o.cocktail}${o.quantite > 1 ? ` pour ${o.quantite} verres` : ""}`);
   if (o.statut === "en_attente") {
-    // Au comptoir, une série du même cocktail au shaker : on s'y ajoute.
-    const joins = series.some(s => s.key === String(o.cocktail).toLowerCase());
-    actions.append(button("act", joins ? "Ajouter à la série →" : "Je prépare →", () => moveMany([o], "en_preparation")));
+    actions.append(button("act", "Je prépare →", () => moveMany([o], "en_preparation")));
     actions.append(recipeButton());
     actions.append(armed("Annuler", "Confirmer ?", () => moveMany([o], "annulee", `N° ${o.numero} annulée`), `annuler:${o.id}`));
   } else if (o.statut === "en_preparation") {
@@ -1121,7 +1330,7 @@ function button(className, text, action, label) {
 }
 /* Action destructive en deux touches (pas de fenêtre de confirmation). L'état
    « armé » survit au rafraîchissement de la liste (toutes les 3 s). */
-function armed(text, confirmText, action, key) {
+function armed(text, confirmText, action, key, label) {
   const b = button("act-2", text, () => {
     if ((armedUntil.get(key) || 0) <= Date.now()) {
       armedUntil.set(key, Date.now() + 3000);
@@ -1130,7 +1339,7 @@ function armed(text, confirmText, action, key) {
     }
     armedUntil.delete(key);
     action();
-  });
+  }, label);
   function show(ms) {
     b.classList.add("armed");
     b.textContent = confirmText;

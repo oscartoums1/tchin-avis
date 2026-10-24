@@ -45,18 +45,22 @@ de commande imaginés par Oscar » en pied. Les liens à 5 champs restent valide
    soirée publiée avant cette version affiche « recette pas encore envoyée »
    jusqu'à la prochaine ouverture dans l'app.
 4. **Le comptoir (iPad)** : sur un écran d'au moins 740 × 560 px, `bar.html`
-   passe en mode comptoir, pensé pour une tablette posée sur le bar et lue à
-   bout de bras. Trois colonnes, une par geste, sans défilement de page :
-   ① **À lancer** (la file, la plus ancienne en haut, total par cocktail),
-   ② **Au shaker** (les commandes lancées regroupées en **séries** par
-   cocktail : doses totales, étapes repliables, puis la tournée — n°,
-   prénom, lieu — avec « Servi » ou « Tout servi » ; si d'autres commandes
-   du même cocktail attendent, « Ajouter à la série » les lance d'un geste),
-   ③ **Servies**. En portrait, deux colonnes (Au shaker ⇄ Servies). Un
-   écran « À vos shakers ! » active le son et garde l'écran allumé (Wake
-   Lock) ; « Servi » se rattrape par « Annuler » dans le message ; pause et
-   ruptures passent dans l'en-tête (« Carte »). Sur téléphone, rien ne
-   change. Ajoutée à l'écran d'accueil, la page s'ouvre en plein écran.
+   passe en mode comptoir, pensé pour un rush d'une trentaine de commandes
+   et une tablette posée sur le bar. **Plein écran** (lancé par « Commencer
+   le service », bouton ⛶ ensuite) et **deux colonnes seulement** :
+   ① **À lancer** — un **lot par cocktail** sur une seule rangée (verres,
+   commandes, attente, lieux, précisions des invités), le plus ancien en
+   haut : 30 commandes / 8 cocktails tiennent sur un écran ; « Lancer » part
+   avec tout le lot, ▾ détaille chaque commande (lancer ou annuler une
+   seule) ; ② **Au shaker** — les **séries** par cocktail : doses totales
+   (sur deux colonnes), étapes repliables, puis la **tournée par lieu**
+   (« Servir ✓ » la Terrasse d'un geste, ou commande par commande) ;
+   « Ajouter à la série » lance les commandes du même cocktail qui
+   attendent. Les **servies** sont derrière le petit onglet « Servies · N »
+   (tiroir à droite, « ⋯ » pour rouvrir ou supprimer). L'écran de départ
+   active aussi le son et garde l'écran allumé (Wake Lock) ; « Servi » se
+   rattrape par « Annuler » dans le message ; pause et ruptures restent
+   dans l'en-tête. Sur téléphone, rien ne change.
 
 La page et l'app se resynchronisent toutes les 3 à 5 secondes (pas de
 WebSocket : robuste sur un réseau de salle des fêtes).
